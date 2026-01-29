@@ -17,6 +17,9 @@ return new class extends Migration {
             $table->string('status');
             $table->timestamp('start_time')->nullable();
             $table->timestamp('end_time')->nullable();
+            $table->timestamp('voting_started_at')->nullable();
+            $table->timestamp('voting_ends_at')->nullable();
+            $table->boolean('is_voting_paused')->default(false);
             $table->timestamps();
         });
     }

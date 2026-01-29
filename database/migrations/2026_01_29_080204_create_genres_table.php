@@ -10,12 +10,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('genres', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->string('name');
+            $table->string('title');
             $table->text('description');
-            $table->boolean('is_active');
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('genres');
     }
 };

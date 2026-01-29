@@ -10,12 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('name');
-            $table->text('description');
-            $table->boolean('is_active');
+            $table->json('settings')->nullable();
+            $table->integer('default_voting_duration')->default(15);
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('companies');
     }
 };

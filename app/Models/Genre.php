@@ -4,12 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Event extends Model
+class Genre extends Model
 {
     public $fillable = [
-        'company_id',
-        'name',
-        'description',
-        'is_active'
+        'title',
+        'description'
     ];
 }

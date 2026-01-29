@@ -13,10 +13,13 @@ return new class extends Migration {
         Schema::create('votes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignId('artist_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->integer('vote');
+            $table->foreignId('performance_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained('voting_questions')->onUpdate('cascade')->onDelete('cascade');
+            $table->integer('rating')->nullable();
             $table->text('comment')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'performance_id', 'question_id']);
         });
     }
 

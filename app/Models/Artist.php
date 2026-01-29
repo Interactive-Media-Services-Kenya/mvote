@@ -12,6 +12,7 @@ class Artist extends Model
         'phone',
         'bio',
         'photo',
-        'is_active'
+        'is_active',
+        'genre_id'
     ];
 }

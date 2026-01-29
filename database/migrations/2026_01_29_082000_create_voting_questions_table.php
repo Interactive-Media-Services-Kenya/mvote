@@ -10,12 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('voting_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->string('name');
-            $table->text('description');
-            $table->boolean('is_active');
+            $table->foreignId('event_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->string('question_text');
+            $table->enum('type', ['rating', 'comment']);
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('voting_questions');
     }
 };

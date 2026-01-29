@@ -20,8 +20,20 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'phone'
+        'nickname',
+        'phone',
+        'password',
     ];
+
+    public function asJudgeEvents()
+    {
+        return $this->belongsToMany(Event::class, 'judge_event');
+    }
+
+    public function votes()
+    {
+        return $this->hasMany(Vote::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

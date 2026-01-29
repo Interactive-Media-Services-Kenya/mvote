@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('artists', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('genre_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('name');
             $table->string('photo')->nullable();
             $table->string('phone');
