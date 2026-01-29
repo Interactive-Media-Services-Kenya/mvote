@@ -198,8 +198,9 @@ const formatVotes = (count) => {
             :show="showVoting"
             :artist="activeArtist"
             @close="showVoting = false"
-            @submit="showVoting = false"
+            @submit="null"
         />
+
     </div>
 </template>
 

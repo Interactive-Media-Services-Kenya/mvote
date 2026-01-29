@@ -82,13 +82,9 @@ const submitVote = () => {
             ratings: answers.value,
             comment: comment.value,
         });
-
-        // Auto close after success
-        setTimeout(() => {
-            close();
-        }, 2000);
     }, 1500);
 };
+
 
 const close = () => {
     emit("close");
@@ -116,10 +112,8 @@ const progressWidth = computed(() => {
                 class="fixed inset-0 z-100 flex items-center justify-center p-6"
             >
                 <!-- Backdrop -->
-                <div
-                    class="absolute inset-0 bg-black/80 backdrop-blur-xl"
-                    @click="close"
-                ></div>
+                <div class="absolute inset-0 bg-black/80 backdrop-blur-xl"></div>
+
 
                 <!-- Content -->
                 <div
@@ -368,11 +362,18 @@ const progressWidth = computed(() => {
                                 >
                                     Energy Sent!
                                 </h2>
-                                <p class="text-gray-400 font-medium">
+                                <p class="text-gray-400 font-medium mb-6">
                                     Your ratings for {{ artist.name }} have been
                                     cast.
                                 </p>
+                                <button
+                                    @click="close"
+                                    class="w-full bg-white text-black font-black py-4 rounded-2xl uppercase tracking-tighter"
+                                >
+                                    Dismiss
+                                </button>
                             </div>
+
 
                             <!-- EXPIRED -->
                             <div

@@ -13,3 +13,19 @@ Route::get('/lineup', function () {
 Route::get('/artist/{id}', function ($id) {
     return Inertia::render('ArtistProfile', ['id' => $id]);
 });
+
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    });
+    Route::get('/artists', function () {
+        return Inertia::render('Admin/Artists');
+    });
+    Route::get('/event', function () {
+        return Inertia::render('Admin/EventSetup');
+    });
+    Route::get('/judges', function () {
+        return Inertia::render('Admin/Judges');
+    });
+});
+

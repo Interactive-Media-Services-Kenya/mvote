@@ -93,23 +93,27 @@ export const votingQuestions = [
         text: "Overall performance - How much did you enjoy this performance?",
         lowLabel: "Didn't connect",
         highLabel: "Loved it!!",
+        target: "both", // both | fan | judge
     },
     {
         id: "connection",
         text: "Crowd Connection: Did the artist connect with you and the crowd during their performance?",
         lowLabel: "Not at all",
         highLabel: "I felt every moment",
+        target: "fan",
     },
     {
         id: "replay",
         text: "Replay Value: Would you want to watch or listen to this artist again in your own time?",
         lowLabel: "Nope",
         highLabel: "Definitely yes",
+        target: "fan",
     },
     {
         id: "rating",
         text: "Overall, how would you rate the artist based on their performance?",
         lowLabel: "Okay",
         highLabel: "Amazing!",
+        target: "judge",
     },
 ];

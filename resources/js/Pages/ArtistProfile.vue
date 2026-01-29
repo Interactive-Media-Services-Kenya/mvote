@@ -215,7 +215,7 @@ const goBack = () => {
             :show="showVoting"
             :artist="artist"
             @close="showVoting = false"
-            @submit="showVoting = false"
+            @submit="null"
         />
     </div>
 </template>
