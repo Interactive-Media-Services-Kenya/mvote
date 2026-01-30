@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
+            GenreSeeder::class,
             EventSeeder::class,
+            ArtistSeeder::class,
         ]);
 
         $adminRole = \App\Models\Role::where('name', 'admin')->first();

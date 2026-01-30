@@ -1,25 +1,15 @@
 <script setup>
 import { Head } from "@inertiajs/vue3";
-import AdminLayout from "../../Layouts/AdminLayout.vue";
-import { artists } from "../../constants";
 import { computed } from "vue";
+import AdminLayout from "../../Layouts/AdminLayout.vue";
 
-const liveArtist = computed(() => artists.find((a) => a.status === "live"));
-const stats = [
-    {
-        label: "Total Votes Cast",
-        value: "45.2k",
-        trend: "+12%",
-        color: "text-brand-yellow",
-    },
-    {
-        label: "Active Fans",
-        value: "1,240",
-        trend: "Live",
-        color: "text-green-500",
-    },
-    { label: "Avg Rating", value: "4.8", trend: "Stars", color: "text-white" },
-];
+const props = defineProps({
+    liveArtist: Object,
+    stats: Array,
+});
+
+const liveArtist = computed(() => props.liveArtist);
+const stats = computed(() => props.stats);
 </script>
 
 <template>

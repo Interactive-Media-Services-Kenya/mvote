@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from "@inertiajs/vue3";
+import { Head, useForm, router } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import HypeModal from "../../Components/HypeModal.vue";
 import { ref } from "vue";
@@ -32,7 +32,14 @@ const questionForm = ref({
 const openQuestionModal = (index = null) => {
     if (index !== null) {
         editingIndex.value = index;
-        questionForm.value = { ...form.questions[index] };
+        questionForm.value = {
+            id: form.questions[index].id || null,
+            question_text: form.questions[index].question_text || "",
+            type: form.questions[index].type || "rating",
+            low_label: form.questions[index].low_label || "",
+            high_label: form.questions[index].high_label || "",
+            target: form.questions[index].target || "both",
+        };
     } else {
         editingIndex.value = null;
         questionForm.value = {
@@ -48,7 +55,24 @@ const openQuestionModal = (index = null) => {
 };
 
 const removeQuestion = (index) => {
-    form.questions.splice(index, 1);
+    const question = form.questions[index];
+
+    if (question.id) {
+        if (
+            confirm(
+                "This metric is already live. Are you sure you want to delete it permanently?",
+            )
+        ) {
+            router.delete(`/admin/event/questions/${question.id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    form.questions.splice(index, 1);
+                },
+            });
+        }
+    } else {
+        form.questions.splice(index, 1);
+    }
 };
 
 const saveQuestion = () => {

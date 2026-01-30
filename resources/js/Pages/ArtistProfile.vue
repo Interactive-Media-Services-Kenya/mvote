@@ -1,20 +1,15 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
-import { artists } from "../constants";
-import VotingOverlay from "../Components/VotingOverlay.vue";
-
 const props = defineProps({
-    id: String,
+    artist: Object,
     event: Object,
 });
 
 const showVoting = ref(false);
 const liveArtistId = ref(1);
-const artist = computed(
-    () => artists.find((a) => a.id === parseInt(props.id)) || artists[0],
-);
 
+const artist = computed(() => props.artist);
 const isLive = computed(() => artist.value.id === liveArtistId.value);
 
 const goBack = () => {

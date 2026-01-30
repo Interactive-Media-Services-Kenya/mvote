@@ -1,11 +1,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
-import { artists } from "../constants";
-import VotingOverlay from "../Components/VotingOverlay.vue";
-import UserMenu from "../Components/UserMenu.vue";
-
 const props = defineProps({
+    artists: Array,
     event: Object,
 });
 
@@ -13,11 +10,13 @@ const searchQuery = ref("");
 const showVoting = ref(false);
 const activeArtist = ref(null);
 
-const liveArtist = computed(() => artists.find((a) => a.status === "live"));
+const liveArtist = computed(() =>
+    (props.artists || []).find((a) => a.status === "live"),
+);
 
 const filteredArtists = computed(() => {
-    if (!searchQuery.value) return artists;
-    return artists.filter(
+    if (!searchQuery.value) return props.artists || [];
+    return (props.artists || []).filter(
         (a) =>
             a.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
             a.genre.toLowerCase().includes(searchQuery.value.toLowerCase()),

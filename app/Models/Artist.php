@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Artist extends Model
 {
-    public $fillable = [
+    protected $fillable = [
         'name',
         'phone',
         'bio',
         'photo',
         'is_active',
+        'status',
         'genre_id'
     ];
 

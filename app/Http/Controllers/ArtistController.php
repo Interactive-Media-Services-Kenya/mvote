@@ -75,4 +75,16 @@ class ArtistController extends Controller
 
         return redirect()->back();
     }
+
+    public function destroy(Artist $artist)
+    {
+        // Delete local photo if it exists
+        if ($artist->photo && strpos($artist->photo, '/storage/artists/') === 0) {
+            \Storage::disk('public')->delete(str_replace('/storage/', '', $artist->photo));
+        }
+
+        $artist->delete();
+
+        return redirect()->back();
+    }
 }

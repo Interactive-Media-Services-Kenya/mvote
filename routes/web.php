@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\JudgeController;
@@ -23,12 +24,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/artist/{id}', [LineupController::class, 'artist']);
 
     Route::prefix('admin')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        });
+        Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/artists', [ArtistController::class, 'index']);
         Route::post('/artists', [ArtistController::class, 'store']);
         Route::post('/artists/{artist}', [ArtistController::class, 'update']);
+        Route::delete('/artists/{artist}', [ArtistController::class, 'destroy']);
         Route::get('/event', [EventController::class, 'index']);
         Route::post('/event', [EventController::class, 'store']);
         Route::get('/judges', [JudgeController::class, 'index']);

@@ -11,10 +11,13 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'event_id' => 'required|exists:events,id',
             'questions' => 'array',
             'questions.*.id' => 'nullable|integer',
             'questions.*.question_text' => 'required|string',
             'questions.*.type' => 'required|in:rating,text',
+            'questions.*.low_label' => 'nullable|string',
+            'questions.*.high_label' => 'nullable|string',
             'questions.*.target' => 'required|in:fan,judge,both',
         ]);
 
@@ -24,7 +27,14 @@ class QuestionController extends Controller
         foreach ($validated['questions'] as $index => $qData) {
             $event->questions()->updateOrCreate(
                 ['id' => $qData['id'] ?? null],
-                array_merge($qData, ['order' => $index])
+                [
+                    'question_text' => $qData['question_text'],
+                    'type' => $qData['type'],
+                    'low_label' => $qData['low_label'] ?? null,
+                    'high_label' => $qData['high_label'] ?? null,
+                    'target' => $qData['target'],
+                    'order' => $index
+                ]
             );
         }
 
