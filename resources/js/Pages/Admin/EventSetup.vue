@@ -69,7 +69,7 @@ const saveQuestion = async () => {
                 <!-- Metadata Form -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
-                        <div class="w-1 h-3 bg-brand-orange rounded-full"></div>
+                        <div class="w-1 h-3 bg-brand-yellow rounded-full"></div>
                         <h3
                             class="text-[10px] font-black uppercase tracking-widest text-white"
                         >
@@ -88,7 +88,7 @@ const saveQuestion = async () => {
                             <input
                                 v-model="eventDetails.title"
                                 type="text"
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold text-white placeholder:text-gray-700"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
                             />
                         </div>
                         <div class="space-y-2">
@@ -99,7 +99,7 @@ const saveQuestion = async () => {
                             <input
                                 v-model="eventDetails.location"
                                 type="text"
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold text-white placeholder:text-gray-700"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
                             />
                         </div>
                         <button
@@ -115,7 +115,7 @@ const saveQuestion = async () => {
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
                             <div
-                                class="w-1 h-3 bg-brand-orange rounded-full"
+                                class="w-1 h-3 bg-brand-yellow rounded-full"
                             ></div>
                             <h3
                                 class="text-[10px] font-black uppercase tracking-widest text-white"
@@ -124,7 +124,7 @@ const saveQuestion = async () => {
                             </h3>
                         </div>
                         <span
-                            class="text-[8px] font-black text-brand-orange uppercase tracking-widest"
+                            class="text-[8px] font-black text-brand-yellow uppercase tracking-widest"
                             >{{ votingQuestions.length }} Slots Active</span
                         >
                     </div>
@@ -144,7 +144,7 @@ const saveQuestion = async () => {
                                             class="px-2 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest border"
                                             :class="[
                                                 q.target === 'fan'
-                                                    ? 'border-brand-orange/30 text-brand-orange bg-brand-orange/5'
+                                                    ? 'border-brand-yellow/30 text-brand-yellow bg-brand-yellow/5'
                                                     : q.target === 'judge'
                                                       ? 'border-purple-500/30 text-purple-400 bg-purple-500/5'
                                                       : 'border-green-500/30 text-green-400 bg-green-500/5',
@@ -199,7 +199,7 @@ const saveQuestion = async () => {
                                             >Min Label</span
                                         >
                                         <span
-                                            class="text-[9px] font-black uppercase text-brand-orange italic"
+                                            class="text-[9px] font-black uppercase text-brand-yellow italic"
                                             >{{ q.lowLabel }}</span
                                         >
                                     </div>
@@ -211,7 +211,7 @@ const saveQuestion = async () => {
                                             >Max Label</span
                                         >
                                         <span
-                                            class="text-[9px] font-black uppercase text-brand-orange italic"
+                                            class="text-[9px] font-black uppercase text-brand-yellow italic"
                                             >{{ q.highLabel }}</span
                                         >
                                     </div>
@@ -221,7 +221,7 @@ const saveQuestion = async () => {
 
                         <button
                             @click="openQuestionModal()"
-                            class="w-full glass-card py-4 rounded-3xl border-dashed border-white/10 text-[9px] font-black uppercase tracking-[0.3em] text-gray-600 hover:text-brand-orange hover:border-brand-orange/30 transition-all active:scale-[0.98]"
+                            class="w-full glass-card py-4 rounded-3xl border-dashed border-white/10 text-[9px] font-black uppercase tracking-[0.3em] text-gray-600 hover:text-brand-yellow hover:border-brand-yellow/30 transition-all active:scale-[0.98]"
                         >
                             + Add Metric Block
                         </button>
@@ -247,7 +247,7 @@ const saveQuestion = async () => {
                     <textarea
                         v-model="questionForm.text"
                         placeholder="e.g. How much did you enjoy the energy?"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-24 outline-none focus:border-brand-orange transition-all font-bold placeholder:text-gray-700 leading-tight text-white resize-none"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-24 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 leading-tight text-white resize-none"
                     ></textarea>
                 </div>
 
@@ -261,7 +261,7 @@ const saveQuestion = async () => {
                             v-model="questionForm.lowLabel"
                             type="text"
                             placeholder="e.g. Weak"
-                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold text-xs text-white placeholder:text-gray-700"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white placeholder:text-gray-700"
                         />
                     </div>
                     <div class="space-y-2 text-left">
@@ -273,7 +273,7 @@ const saveQuestion = async () => {
                             v-model="questionForm.highLabel"
                             type="text"
                             placeholder="e.g. Fire!"
-                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold text-xs text-white placeholder:text-gray-700"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white placeholder:text-gray-700"
                         />
                     </div>
                 </div>
@@ -292,7 +292,7 @@ const saveQuestion = async () => {
                             class="py-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all"
                             :class="[
                                 questionForm.target === target
-                                    ? 'bg-brand-orange text-black border-brand-orange shadow-lg shadow-brand-orange/20'
+                                    ? 'bg-brand-yellow text-black border-brand-yellow shadow-lg shadow-brand-yellow/20'
                                     : 'bg-white/5 border-white/10 text-gray-500',
                             ]"
                         >

@@ -1,6 +1,7 @@
 <script setup>
 import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
+import UserMenu from "../Components/UserMenu.vue";
 
 const page = usePage();
 const currentRoute = computed(() => page.url);
@@ -39,21 +40,17 @@ const navItems = [
                 <div class="flex items-center gap-4">
                     <Link
                         href="/lineup"
-                        class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-orange transition-all flex items-center gap-1.5"
+                        class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-yellow transition-all flex items-center gap-1.5"
                     >
                         <span class="text-xs">&larr;</span> Exit
                     </Link>
                     <div class="h-4 w-px bg-white/10"></div>
                     <h1 class="text-2xl font-black italic tracking-tighter">
-                        M<span class="text-brand-orange">VOTE</span>
+                        M<span class="text-brand-yellow">VOTE</span>
                     </h1>
                 </div>
 
-                <div
-                    class="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center"
-                >
-                    <span class="text-brand-orange font-bold text-xs">AD</span>
-                </div>
+                <UserMenu />
             </div>
         </nav>
 
@@ -78,7 +75,7 @@ const navItems = [
                     class="flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 relative group"
                     :class="[
                         currentRoute.startsWith(item.href)
-                            ? 'bg-brand-orange text-black shadow-[0_4px_15px_rgba(255,107,0,0.4)]'
+                            ? 'bg-brand-yellow text-black shadow-[0_4px_15px_rgba(255,107,0,0.4)]'
                             : 'text-gray-500 hover:text-white hover:bg-white/5',
                     ]"
                 >

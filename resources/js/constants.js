@@ -57,7 +57,7 @@ export const artists = [
         bio: "Tems is a Nigerian singer and songwriter whose soulful and unique vocal style has earned her international acclaim and Grammy recognition.",
         discography: [
             { title: "For Broken Ears", year: 2020 },
-            { title: "If Orange Was a Place", year: 2021 },
+            { title: "If yellow Was a Place", year: 2021 },
         ],
     },
     {

@@ -85,7 +85,6 @@ const submitVote = () => {
     }, 1500);
 };
 
-
 const close = () => {
     emit("close");
     // Reset state for next time
@@ -112,19 +111,20 @@ const progressWidth = computed(() => {
                 class="fixed inset-0 z-100 flex items-center justify-center p-6"
             >
                 <!-- Backdrop -->
-                <div class="absolute inset-0 bg-black/80 backdrop-blur-xl"></div>
-
+                <div
+                    class="absolute inset-0 bg-black/90 backdrop-blur-2xl"
+                ></div>
 
                 <!-- Content -->
                 <div
-                    class="relative w-full max-w-sm glass-card rounded-[2.5rem] p-8 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border-white/10 animate-fade-up"
+                    class="relative w-full max-w-sm glass-card rounded-[2.5rem] p-8 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/20 animate-fade-up"
                 >
                     <!-- Progress Bar -->
                     <div
-                        class="absolute top-0 left-0 h-1 bg-brand-orange/20 w-full"
+                        class="absolute top-0 left-0 h-1 bg-brand-yellow/20 w-full"
                     >
                         <div
-                            class="h-full bg-brand-orange transition-all duration-500 shadow-[0_0_10px_rgba(255,107,0,0.8)]"
+                            class="h-full bg-brand-yellow transition-all duration-500 shadow-[0_0_10px_rgba(255,107,0,0.8)]"
                             :style="{ width: progressWidth }"
                         ></div>
                     </div>
@@ -202,7 +202,7 @@ const progressWidth = computed(() => {
                                         class="flex items-center justify-center gap-2 mb-2"
                                     >
                                         <span
-                                            class="text-brand-orange text-[10px] font-black uppercase tracking-widest"
+                                            class="text-brand-yellow text-[10px] font-black uppercase tracking-widest"
                                             >Question</span
                                         >
                                         <span
@@ -248,7 +248,7 @@ const progressWidth = computed(() => {
                                                 'w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black transition-all active:scale-90',
                                                 answers[currentQuestion.id] ===
                                                 i
-                                                    ? 'bg-brand-orange text-black scale-110 shadow-[0_0_15px_rgba(255,107,0,0.5)]'
+                                                    ? 'bg-brand-yellow text-black scale-110 shadow-[0_0_15px_rgba(255,107,0,0.5)]'
                                                     : 'bg-brand-gray text-gray-400 border border-white/5',
                                             ]"
                                         >
@@ -281,7 +281,7 @@ const progressWidth = computed(() => {
                             >
                                 <header>
                                     <p
-                                        class="text-brand-orange text-xs font-black uppercase tracking-widest mb-2"
+                                        class="text-brand-yellow text-xs font-black uppercase tracking-widest mb-2"
                                     >
                                         Final Step
                                     </p>
@@ -295,7 +295,7 @@ const progressWidth = computed(() => {
                                 <textarea
                                     v-model="comment"
                                     placeholder="Tell them why they rocks! (Optional)"
-                                    class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-30 outline-none focus:border-brand-orange transition-all font-medium text-white resize-none"
+                                    class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-30 outline-none focus:border-brand-yellow transition-all font-medium text-white resize-none"
                                     :disabled="isSubmitting || isPaused"
                                 ></textarea>
 
@@ -314,7 +314,7 @@ const progressWidth = computed(() => {
                                     <button
                                         @click="submitVote"
                                         :disabled="isSubmitting"
-                                        class="w-full bg-brand-orange text-black font-black py-4 rounded-2xl uppercase tracking-tighter text-lg animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                                        class="w-full bg-brand-yellow text-black font-black py-4 rounded-2xl uppercase tracking-tighter text-lg animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.3)]"
                                     >
                                         {{
                                             isSubmitting
@@ -373,7 +373,6 @@ const progressWidth = computed(() => {
                                     Dismiss
                                 </button>
                             </div>
-
 
                             <!-- EXPIRED -->
                             <div

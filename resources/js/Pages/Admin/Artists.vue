@@ -53,7 +53,7 @@ const onboardArtist = async () => {
                 </div>
                 <button
                     @click="showAddModal = true"
-                    class="w-12 h-12 bg-brand-orange text-black rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all"
+                    class="w-12 h-12 bg-brand-yellow text-black rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +80,7 @@ const onboardArtist = async () => {
                     class="glass-card p-3 rounded-3xl border-white/5 flex items-center gap-4 group active:scale-[0.99] transition-all relative overflow-hidden"
                 >
                     <div
-                        class="w-14 h-14 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/10 group-hover:border-brand-orange/30 transition-colors"
+                        class="w-14 h-14 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/10 group-hover:border-brand-yellow/30 transition-colors"
                     >
                         <img
                             :src="artist.image"
@@ -96,7 +96,7 @@ const onboardArtist = async () => {
                         </h4>
                         <div class="flex items-center gap-2">
                             <span
-                                class="text-[8px] font-black uppercase text-brand-orange tracking-widest"
+                                class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
                                 >{{ artist.genre }}</span
                             >
                             <span
@@ -176,7 +176,7 @@ const onboardArtist = async () => {
                         v-model="newArtist.name"
                         type="text"
                         placeholder="e.g. Burna Boy"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold placeholder:text-gray-700 text-white"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 text-white"
                     />
                 </div>
                 <div class="space-y-2">
@@ -188,7 +188,7 @@ const onboardArtist = async () => {
                         v-model="newArtist.genre"
                         type="text"
                         placeholder="e.g. Afro-Fusion"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-orange transition-all font-bold placeholder:text-gray-700 text-white"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 text-white"
                     />
                 </div>
 
@@ -200,7 +200,7 @@ const onboardArtist = async () => {
                     <textarea
                         v-model="newArtist.bio"
                         placeholder="Tell the fans why they should vote..."
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-32 outline-none focus:border-brand-orange transition-all font-medium resize-none placeholder:text-gray-700 leading-relaxed text-white"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-32 outline-none focus:border-brand-yellow transition-all font-medium resize-none placeholder:text-gray-700 leading-relaxed text-white"
                     ></textarea>
                 </div>
 
@@ -209,7 +209,7 @@ const onboardArtist = async () => {
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
                             <div
-                                class="w-1 h-3 bg-brand-orange rounded-full"
+                                class="w-1 h-3 bg-brand-yellow rounded-full"
                             ></div>
                             <h4
                                 class="text-[10px] font-black uppercase tracking-widest text-white"
@@ -219,7 +219,7 @@ const onboardArtist = async () => {
                         </div>
                         <button
                             @click="addDiscographyRow"
-                            class="text-[9px] font-black uppercase tracking-widest text-brand-orange hover:text-white transition-colors"
+                            class="text-[9px] font-black uppercase tracking-widest text-brand-yellow hover:text-white transition-colors"
                         >
                             + Add Entry
                         </button>
@@ -237,13 +237,13 @@ const onboardArtist = async () => {
                                 v-model="album.title"
                                 type="text"
                                 placeholder="Album Title"
-                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-orange transition-all font-bold text-xs text-white"
+                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white"
                             />
                             <input
                                 v-model="album.year"
                                 type="text"
                                 placeholder="Year"
-                                class="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-orange transition-all font-bold text-xs text-center text-white"
+                                class="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-center text-white"
                             />
                             <button
                                 v-if="newArtist.discography.length > 1"
@@ -275,7 +275,7 @@ const onboardArtist = async () => {
                     <button
                         @click="onboardArtist"
                         :disabled="isSubmitting"
-                        class="w-full bg-brand-orange text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden"
+                        class="w-full bg-brand-yellow text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden"
                     >
                         <span v-if="!isSubmitting">Confirm Onboarding</span>
                         <span

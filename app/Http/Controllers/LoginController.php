@@ -132,6 +132,20 @@ class LoginController extends Controller
 
         Auth::login($user, true);
 
-        return redirect('/lineup');
+        if ($user->role && $user->role->name === 'admin') {
+            return redirect('/admin/dashboard');
+        }
+
+        return redirect()->route('lineup');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }

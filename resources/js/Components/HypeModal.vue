@@ -43,14 +43,14 @@ onUnmounted(() => {
             >
                 <!-- Backdrop -->
                 <div
-                    class="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                    class="absolute inset-0 bg-black/90 backdrop-blur-2xl"
                     @click="close"
                 ></div>
 
                 <!-- Content -->
                 <div
                     :class="[
-                        'relative w-full glass-card rounded-3xl p-6 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border-white/10 animate-fade-up flex flex-col',
+                        'relative w-full glass-card rounded-3xl p-6 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/20 animate-fade-up flex flex-col',
                         maxWidth,
                     ]"
                 >
@@ -82,7 +82,7 @@ onUnmounted(() => {
                     >
                         <h3
                             v-if="subtitle"
-                            class="text-[10px] font-black text-brand-orange uppercase tracking-[0.2em] mb-1"
+                            class="text-[10px] font-black text-brand-yellow uppercase tracking-[0.2em] mb-1"
                         >
                             {{ subtitle }}
                         </h3>

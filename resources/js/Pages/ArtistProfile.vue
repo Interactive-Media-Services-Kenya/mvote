@@ -62,7 +62,7 @@ const goBack = () => {
         <div class="px-6 -mt-20 relative z-10 animate-fade-up">
             <div class="mb-8">
                 <p
-                    class="text-brand-orange text-sm font-black uppercase tracking-[0.2em] mb-1"
+                    class="text-brand-yellow text-sm font-black uppercase tracking-[0.2em] mb-1"
                 >
                     {{ artist.genre }}
                 </p>
@@ -120,7 +120,7 @@ const goBack = () => {
                         :class="[
                             'px-8 py-3 rounded-full font-bold flex-1 active:scale-95 transition-transform uppercase text-sm tracking-widest',
                             isLive
-                                ? 'bg-brand-orange text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
+                                ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
                                 : 'bg-white text-black',
                         ]"
                     >
@@ -163,7 +163,7 @@ const goBack = () => {
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-black italic">Discography</h2>
                         <span
-                            class="text-brand-orange text-xs font-bold uppercase"
+                            class="text-brand-yellow text-xs font-bold uppercase"
                             >See all</span
                         >
                     </div>
@@ -175,7 +175,7 @@ const goBack = () => {
                             class="glass-card p-4 rounded-2xl flex items-center gap-4 border-white/5 group active:bg-white/10 transition-colors"
                         >
                             <div
-                                class="w-16 h-16 bg-brand-gray rounded-xl shrink-0 flex items-center justify-center font-black text-brand-orange/40 text-xl italic overflow-hidden"
+                                class="w-16 h-16 bg-brand-gray rounded-xl shrink-0 flex items-center justify-center font-black text-brand-yellow/40 text-xl italic overflow-hidden"
                             >
                                 <img
                                     v-if="i === 0"

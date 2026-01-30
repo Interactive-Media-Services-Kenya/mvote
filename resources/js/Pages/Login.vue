@@ -3,6 +3,20 @@ import { ref, computed } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
 
 const step = ref("IDENTIFY");
+const showCookieConsent = ref(false);
+
+import { onMounted } from "vue";
+
+onMounted(() => {
+    if (!localStorage.getItem("cookie_consent")) {
+        showCookieConsent.value = true;
+    }
+});
+
+const acceptCookies = () => {
+    localStorage.setItem("cookie_consent", "accepted");
+    showCookieConsent.value = false;
+};
 
 const form = useForm({
     phone: "",
@@ -78,7 +92,7 @@ const handleVerify = () => {
             <h1
                 class="text-5xl font-black italic tracking-tighter text-white uppercase"
             >
-                M<span class="text-brand-orange">VOTE</span>
+                M<span class="text-brand-yellow">VOTE</span>
             </h1>
             <p class="text-gray-400 mt-2 font-medium">
                 Your Voice, The Stage Energy.
@@ -97,7 +111,7 @@ const handleVerify = () => {
                     <div class="space-y-4">
                         <div class="group">
                             <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-orange"
+                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
                                 :class="{ 'text-red-500': form.errors.phone }"
                             >
                                 Phone Number
@@ -107,7 +121,7 @@ const handleVerify = () => {
                                 @input="form.clearErrors('phone')"
                                 type="tel"
                                 placeholder="07XX XXX XXX"
-                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-orange text-white px-5 py-4 rounded-2xl outline-none transition-all text-lg font-bold"
+                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all text-lg font-bold"
                                 :class="{
                                     'border-red-500/50 bg-red-500/5':
                                         form.errors.phone,
@@ -123,7 +137,7 @@ const handleVerify = () => {
 
                         <div class="group">
                             <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-orange"
+                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
                             >
                                 Nickname
                                 <span class="text-[10px] opacity-50 font-normal"
@@ -134,7 +148,7 @@ const handleVerify = () => {
                                 v-model="form.nick_name"
                                 type="text"
                                 placeholder=""
-                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-orange text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium"
+                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium"
                             />
                         </div>
                     </div>
@@ -142,7 +156,7 @@ const handleVerify = () => {
                     <button
                         @click="handleIdentify"
                         :disabled="!form.phone || form.processing"
-                        class="w-full bg-brand-orange hover:bg-orange-500 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale uppercase tracking-tighter text-xl shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse"
+                        class="w-full bg-brand-yellow hover:bg-yellow-500 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale uppercase tracking-tighter text-xl shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse"
                     >
                         {{ form.processing ? "Sending..." : "Get OTP" }}
                     </button>
@@ -171,7 +185,7 @@ const handleVerify = () => {
                             type="text"
                             maxlength="1"
                             inputmode="numeric"
-                            class="w-full aspect-square bg-brand-gray border-2 border-transparent focus:border-brand-orange text-center text-2xl font-black rounded-xl outline-none transition-all"
+                            class="w-full aspect-square bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-center text-2xl font-black rounded-xl outline-none transition-all"
                             :class="{
                                 'border-red-500/50 bg-red-500/5':
                                     form.errors.otp,
@@ -202,6 +216,58 @@ const handleVerify = () => {
                             class="w-full text-gray-500 font-bold py-2 hover:text-white transition-colors uppercase text-xs tracking-widest"
                         >
                             Back to info
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+            <!-- Cookie Consent Prompt -->
+            <Transition name="fade-up">
+                <div
+                    v-if="showCookieConsent"
+                    class="fixed bottom-6 left-6 right-6 z-60 glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-brand-yellow/20 shadow-[0_-10px_50px_rgba(0,0,0,0.5)] animate-fade-up max-w-lg mx-auto md:max-w-none"
+                >
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-brand-yellow/10 flex items-center justify-center text-brand-yellow shrink-0"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">
+                                We Value Your Hype
+                            </h3>
+                            <p class="text-gray-400 text-xs">
+                                We use cookies to enhance your arena experience
+                                and analyze site traffic.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <button
+                            @click="showCookieConsent = false"
+                            class="flex-1 md:flex-none px-6 py-3 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                        >
+                            Close
+                        </button>
+                        <button
+                            @click="acceptCookies"
+                            class="flex-1 md:flex-none px-8 py-3 bg-brand-yellow text-black font-black text-xs uppercase tracking-widest rounded-xl hover:bg-white transition-all transform active:scale-95 shadow-[0_4px_15px_rgba(255,205,0,0.3)]"
+                        >
+                            Accept
                         </button>
                     </div>
                 </div>

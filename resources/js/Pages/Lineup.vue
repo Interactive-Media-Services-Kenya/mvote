@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import { artists } from "../constants";
 import VotingOverlay from "../Components/VotingOverlay.vue";
+import UserMenu from "../Components/UserMenu.vue";
 
 const searchQuery = ref("");
 const showVoting = ref(false);
@@ -20,10 +21,8 @@ const filteredArtists = computed(() => {
 });
 
 const openVoting = (artist) => {
-    if (artist.status === "live") {
-        activeArtist.value = artist;
-        showVoting.value = true;
-    }
+    activeArtist.value = artist;
+    showVoting.value = true;
 };
 
 const formatVotes = (count) => {
@@ -33,21 +32,17 @@ const formatVotes = (count) => {
 </script>
 
 <template>
-    <Head title="Lineup - MVote" />
+    <div class="min-h-screen bg-brand-black text-white font-sans pb-32">
+        <Head title="Lineup - MVote" />
 
-    <div class="min-h-screen bg-brand-black text-white font-sans pb-28">
         <!-- Top Sticky Nav -->
         <nav
             class="sticky top-0 z-50 glass-nav px-6 py-4 flex items-center justify-between"
         >
             <h1 class="text-2xl font-black italic tracking-tighter">
-                M<span class="text-brand-orange">VOTE</span>
+                M<span class="text-brand-yellow">VOTE</span>
             </h1>
-            <div
-                class="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center"
-            >
-                <span class="text-brand-orange font-bold text-xs">TN</span>
-            </div>
+            <UserMenu />
         </nav>
 
         <div class="px-6 pt-8 animate-fade-up">
@@ -64,7 +59,7 @@ const formatVotes = (count) => {
                     v-model="searchQuery"
                     type="text"
                     placeholder="Search artist or genre..."
-                    class="w-full bg-brand-gray/50 border border-white/10 px-12 py-4 rounded-2xl outline-none focus:border-brand-orange/50 transition-all font-medium"
+                    class="w-full bg-brand-gray/50 border border-white/10 px-12 py-4 rounded-2xl outline-none focus:border-brand-yellow/50 transition-all font-medium"
                 />
                 <div
                     class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
@@ -114,7 +109,7 @@ const formatVotes = (count) => {
                                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-[10px] uppercase font-black tracking-tight shadow-2xl"
                                 >
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6B00]"
+                                        class="w-1.5 h-1.5 rounded-full bg-brand-yellow shadow-[0_0_8px_#FF6B00]"
                                     ></span>
                                     <span class="text-white drop-shadow-sm"
                                         >{{
@@ -147,7 +142,7 @@ const formatVotes = (count) => {
                         <!-- <button
                             v-if="artist.status === 'live'"
                             @click="openVoting(artist)"
-                            class="absolute -bottom-2 -right-2 w-10 h-10 bg-brand-orange text-black rounded-xl flex items-center justify-center shadow-xl active:scale-90 transition-transform z-10"
+                            class="absolute -bottom-2 -right-2 w-10 h-10 bg-brand-yellow text-black rounded-xl flex items-center justify-center shadow-xl active:scale-90 transition-transform z-10"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -170,7 +165,7 @@ const formatVotes = (count) => {
                         {{ artist.name }}
                     </h3>
                     <p
-                        class="text-brand-orange text-[10px] font-black uppercase tracking-widest mt-0.5 px-1"
+                        class="text-brand-yellow text-[10px] font-black uppercase tracking-widest mt-0.5 px-1"
                     >
                         {{ artist.genre }}
                     </p>
@@ -185,7 +180,7 @@ const formatVotes = (count) => {
             <button
                 v-if="liveArtist"
                 @click="openVoting(liveArtist)"
-                class="w-full bg-brand-orange py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white"
+                class="w-full bg-brand-yellow py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white"
             >
                 <span
                     class="w-2 h-2 rounded-full bg-white animate-pulse"
