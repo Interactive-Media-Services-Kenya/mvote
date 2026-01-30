@@ -85,22 +85,35 @@ const handleVerify = () => {
     <Head title="Login - MVote" />
 
     <div
-        class="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 font-sans"
+        class="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden"
     >
+        <!-- Static Background -->
+        <div class="absolute inset-0 z-0">
+            <div
+                class="absolute inset-0 bg-brand-black/60 z-10 backdrop-blur-[2px]"
+            ></div>
+            <img
+                class="w-full h-full object-cover animate-ken-burns"
+                alt="Background"
+            />
+        </div>
+
         <!-- Logo/Header Area -->
-        <div class="mb-12 text-center animate-fade-up">
+        <div class="mb-12 text-center animate-fade-up relative z-10">
             <h1
-                class="text-5xl font-black italic tracking-tighter text-white uppercase"
+                class="text-5xl font-black italic tracking-tighter text-white uppercase drop-shadow-2xl"
             >
                 M<span class="text-brand-yellow">VOTE</span>
             </h1>
-            <p class="text-gray-400 mt-2 font-medium">
+            <p
+                class="text-gray-200 mt-2 font-black uppercase tracking-[0.3em] text-[10px] drop-shadow-lg"
+            >
                 Your Voice, The Stage Energy.
             </p>
         </div>
 
         <!-- Flow Container -->
-        <div class="w-full max-w-sm">
+        <div class="w-full max-w-sm relative z-10">
             <Transition name="fade-slide" mode="out-in">
                 <!-- STEP 1: IDENTIFY -->
                 <div
@@ -290,5 +303,18 @@ const handleVerify = () => {
 .fade-slide-leave-to {
     opacity: 0;
     transform: translateX(-20px);
+}
+
+@keyframes ken-burns {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+    100% {
+        transform: scale(1.1) translate(-1%, -1%);
+    }
+}
+
+.animate-ken-burns {
+    animation: ken-burns 20s linear infinite alternate;
 }
 </style>

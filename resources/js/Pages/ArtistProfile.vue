@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
+import UserMenu from "../Components/UserMenu.vue";
+import VotingOverlay from "../Components/VotingOverlay.vue";
 const props = defineProps({
     artist: Object,
     event: Object,
@@ -81,7 +83,7 @@ const goBack = () => {
             <!-- Floating Back Button -->
             <button
                 @click="goBack"
-                class="absolute top-4 left-4 size-10 glass-card rounded-full flex items-center justify-center text-white z-10"
+                class="absolute top-4 left-4 size-10 glass-card rounded-full flex items-center justify-center text-white z-20"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -98,6 +100,11 @@ const goBack = () => {
                     />
                 </svg>
             </button>
+
+            <!-- User Menu -->
+            <div class="absolute top-4 right-4 z-20">
+                <UserMenu />
+            </div>
         </div>
 
         <!-- Content Body (Slide up) -->

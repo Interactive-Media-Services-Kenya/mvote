@@ -39,21 +39,26 @@ class EventController extends Controller
         $eventData = [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
-            'is_active' => $validated['is_active'] ?? true,
+            'is_active' => $request->has('is_active') ? $validated['is_active'] : true,
             'company_id' => 1,
         ];
 
+        // If no ID provided, try to find the latest event so we don't duplicate
+        $eventId = $request->id;
+        if (!$eventId) {
+            $latestEvent = Event::latest()->first();
+            $eventId = $latestEvent?->id;
+        }
+
         $event = Event::updateOrCreate(
-            ['id' => $request->id],
+            ['id' => $eventId],
             $eventData
         );
 
         // Sync questions
-        $existingQuestionIds = collect($validated['questions'])->pluck('id')->filter()->toArray();
-        $event->questions()->whereNotIn('id', $existingQuestionIds)->delete();
-
+        $syncedIds = [];
         foreach ($validated['questions'] as $index => $qData) {
-            $event->questions()->updateOrCreate(
+            $question = $event->questions()->updateOrCreate(
                 ['id' => $qData['id'] ?? null],
                 [
                     'question_text' => $qData['question_text'],
@@ -64,7 +69,11 @@ class EventController extends Controller
                     'order' => $index,
                 ]
             );
+            $syncedIds[] = $question->id;
         }
+
+        // Questions not in the payload should be removed if they are already in the DB
+        $event->questions()->whereNotIn('id', $syncedIds)->delete();
 
         return back()->with('success', 'Event configuration updated successfully.');
     }

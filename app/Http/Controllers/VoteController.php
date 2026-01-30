@@ -25,13 +25,25 @@ class VoteController extends Controller
             return back()->with('error', 'Voting session is closed.');
         }
 
-        foreach ($request->ratings as $questionId => $rating) {
+        foreach ($request->ratings as $questionId => $answer) {
+            $question = \App\Models\VotingQuestion::find($questionId);
+            
+            $rating = null;
+            $voteComment = $request->comment;
+
+            if ($question && $question->type === 'rating') {
+                $rating = (int) $answer;
+            } else {
+                // If text question, the answer is the comment itself
+                $voteComment = $answer . ($request->comment ? "\n---\n" . $request->comment : "");
+            }
+
             Vote::create([
                 'user_id' => $user->id,
                 'performance_id' => $performance->id,
                 'question_id' => $questionId,
                 'rating' => $rating,
-                'comment' => $request->comment
+                'comment' => $voteComment
             ]);
         }
 

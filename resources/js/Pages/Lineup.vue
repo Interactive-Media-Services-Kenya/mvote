@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
+import UserMenu from "../Components/UserMenu.vue";
+import VotingOverlay from "../Components/VotingOverlay.vue";
 const props = defineProps({
     artists: Array,
     event: Object,
@@ -256,7 +258,7 @@ watch(
             </button>
             <button
                 v-else
-                class="w-full glass-card py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 border-white/20 shadow-2xl opacity-50"
+                class="w-full glass-card py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 border-white/20 shadow-2xl opacity-80"
             >
                 Voting opens soon
             </button>

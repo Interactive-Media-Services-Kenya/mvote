@@ -77,7 +77,7 @@ const removeQuestion = (index) => {
 
 const saveQuestion = () => {
     if (editingIndex.value !== null) {
-        form.questions[editingIndex.value] = { ...questionForm.value };
+        form.questions.splice(editingIndex.value, 1, { ...questionForm.value });
     } else {
         form.questions.push({ ...questionForm.value });
     }
@@ -87,8 +87,12 @@ const saveQuestion = () => {
 const submitEvent = () => {
     form.post("/admin/event", {
         preserveScroll: true,
-        onSuccess: () => {
-            // Success notification if needed
+        onSuccess: (page) => {
+            const updatedEvent = page.props.event;
+            if (updatedEvent) {
+                form.id = updatedEvent.id;
+                form.questions = [...updatedEvent.questions];
+            }
         },
     });
 };
@@ -136,7 +140,16 @@ const submitEvent = () => {
                                 v-model="form.name"
                                 type="text"
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
+                                :class="{
+                                    'border-red-500/50': form.errors.name,
+                                }"
                             />
+                            <p
+                                v-if="form.errors.name"
+                                class="text-[8px] text-red-400 font-bold uppercase ml-1"
+                            >
+                                {{ form.errors.name }}
+                            </p>
                         </div>
                         <div class="space-y-2">
                             <label
@@ -147,17 +160,35 @@ const submitEvent = () => {
                                 v-model="form.description"
                                 type="text"
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
+                                :class="{
+                                    'border-red-500/50':
+                                        form.errors.description,
+                                }"
                             />
+                            <p
+                                v-if="form.errors.description"
+                                class="text-[8px] text-red-400 font-bold uppercase ml-1"
+                            >
+                                {{ form.errors.description }}
+                            </p>
                         </div>
-                        <button
-                            @click="submitEvent"
-                            :disabled="form.processing"
-                            class="w-full bg-white/5 text-white/50 border border-white/10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:text-white hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50"
-                        >
-                            {{
-                                form.processing ? "Syncing..." : "Apply Changes"
-                            }}
-                        </button>
+                        <div class="flex items-center justify-between px-1">
+                            <span
+                                class="text-[9px] font-black uppercase text-gray-500 tracking-widest"
+                                >Event Visibility</span
+                            >
+                            <button
+                                @click="form.is_active = !form.is_active"
+                                class="px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all"
+                                :class="
+                                    form.is_active
+                                        ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                                "
+                            >
+                                {{ form.is_active ? "Active" : "Inactive" }}
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -256,10 +287,30 @@ const submitEvent = () => {
                                 </div>
 
                                 <h4
-                                    class="text-base font-black italic text-white mb-4 pr-6 leading-tight uppercase tracking-tighter"
+                                    class="text-base font-black italic text-white mb-1 pr-6 leading-tight uppercase tracking-tighter"
+                                    :class="{
+                                        'text-red-400':
+                                            form.errors[
+                                                `questions.${index}.question_text`
+                                            ],
+                                    }"
                                 >
                                     {{ q.question_text }}
                                 </h4>
+                                <p
+                                    v-if="
+                                        form.errors[
+                                            `questions.${index}.question_text`
+                                        ]
+                                    "
+                                    class="text-[8px] text-red-500 font-bold uppercase mb-4"
+                                >
+                                    {{
+                                        form.errors[
+                                            `questions.${index}.question_text`
+                                        ]
+                                    }}
+                                </p>
 
                                 <div
                                     v-if="q.type === 'rating'"
@@ -305,6 +356,26 @@ const submitEvent = () => {
                         >
                             + Add Metric Block
                         </button>
+                    </div>
+
+                    <div class="pt-6">
+                        <button
+                            @click="submitEvent"
+                            :disabled="form.processing"
+                            class="w-full bg-brand-yellow text-black py-5 rounded-3xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_20px_40px_rgba(255,107,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                        >
+                            {{
+                                form.processing
+                                    ? "Syncing Event..."
+                                    : "DEPLOY ALL SETTINGS & METRICS"
+                            }}
+                        </button>
+                        <p
+                            v-if="form.recentlySuccessful"
+                            class="text-center text-green-500 text-[9px] font-black uppercase tracking-widest mt-4 animate-pulse"
+                        >
+                            Successfully Deployed to Mission Control!
+                        </p>
                     </div>
                 </section>
             </div>
