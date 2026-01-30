@@ -10,6 +10,9 @@ class VotingQuestion extends Model
         'event_id',
         'question_text',
         'type',
+        'low_label',
+        'high_label',
+        'target',
         'order'
     ];
 

@@ -12,4 +12,9 @@ class Event extends Model
         'description',
         'is_active'
     ];
+
+    public function questions()
+    {
+        return $this->hasMany(VotingQuestion::class)->orderBy('order');
+    }
 }

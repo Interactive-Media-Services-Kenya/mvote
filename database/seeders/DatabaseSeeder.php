@@ -15,15 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
+        $this->call([
+            RoleSeeder::class,
+            EventSeeder::class,
+        ]);
 
         $adminRole = \App\Models\Role::where('name', 'admin')->first();
 
-        User::create([
-            'nick_name' => 'Admin',
-            'phone' => '254706783789',
-            'role_id' => $adminRole->id,
-            // Password excluded if not used in current login flow
-        ]);
+        User::firstOrCreate(
+            ['phone' => '254706783789'],
+            [
+                'nick_name' => 'Admin',
+                'role_id' => $adminRole->id,
+            ]
+        );
     }
 }

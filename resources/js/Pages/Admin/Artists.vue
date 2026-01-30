@@ -1,9 +1,9 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import HypeModal from "../../Components/HypeModal.vue";
 import { artists } from "../../constants";
-import { ref } from "vue";
+import { ref, toRaw } from "vue";
 
 const showAddModal = ref(false);
 const isSubmitting = ref(false);
@@ -18,12 +18,17 @@ const addDiscographyRow = () => {
     newArtist.value.discography.push({ title: "", year: "" });
 };
 
+const genres = usePage().props.genres;
+
 const onboardArtist = async () => {
     isSubmitting.value = true;
+    console.log("Onboarding New Artist:", toRaw(newArtist.value));
+
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    // Simulate addition to list
+
     isSubmitting.value = false;
     showAddModal.value = false;
+
     newArtist.value = {
         name: "",
         genre: "",
@@ -45,6 +50,7 @@ const onboardArtist = async () => {
                     >
                         Lineup
                     </h2>
+
                     <p
                         class="text-gray-500 font-bold uppercase tracking-widest text-[9px] mt-1"
                     >
@@ -160,7 +166,7 @@ const onboardArtist = async () => {
         <!-- Unified Hype Modal -->
         <HypeModal
             :show="showAddModal"
-            title="Onboard Act"
+            title="Onboard Artist"
             subtitle="Lineup expansion"
             maxWidth="max-w-md"
             @close="showAddModal = false"
@@ -182,14 +188,49 @@ const onboardArtist = async () => {
                 <div class="space-y-2">
                     <label
                         class="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1"
-                        >Genre</label
                     >
-                    <input
-                        v-model="newArtist.genre"
-                        type="text"
-                        placeholder="e.g. Afro-Fusion"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 text-white"
-                    />
+                        Genre
+                    </label>
+                    <div class="relative group">
+                        <select
+                            v-model="newArtist.genre"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white appearance-none cursor-pointer"
+                        >
+                            <option
+                                value=""
+                                disabled
+                                selected
+                                class="bg-zinc-900 text-gray-500"
+                            >
+                                Select Genre
+                            </option>
+                            <option
+                                v-for="genre in genres"
+                                :key="genre.id"
+                                :value="genre.title"
+                                class="bg-zinc-900 text-white py-2"
+                            >
+                                {{ genre.title }}
+                            </option>
+                        </select>
+
+                        <div
+                            class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 group-focus-within:text-brand-yellow transition-colors"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-2">

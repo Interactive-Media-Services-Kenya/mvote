@@ -5,6 +5,10 @@ import { artists } from "../constants";
 import VotingOverlay from "../Components/VotingOverlay.vue";
 import UserMenu from "../Components/UserMenu.vue";
 
+const props = defineProps({
+    event: Object,
+});
+
 const searchQuery = ref("");
 const showVoting = ref(false);
 const activeArtist = ref(null);
@@ -199,6 +203,7 @@ const formatVotes = (count) => {
             v-if="activeArtist"
             :show="showVoting"
             :artist="activeArtist"
+            :questions="event?.questions || []"
             @close="showVoting = false"
             @submit="null"
         />

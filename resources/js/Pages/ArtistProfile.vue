@@ -6,6 +6,7 @@ import VotingOverlay from "../Components/VotingOverlay.vue";
 
 const props = defineProps({
     id: String,
+    event: Object,
 });
 
 const showVoting = ref(false);
@@ -214,6 +215,7 @@ const goBack = () => {
         <VotingOverlay
             :show="showVoting"
             :artist="artist"
+            :questions="event?.questions || []"
             @close="showVoting = false"
             @submit="null"
         />

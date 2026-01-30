@@ -1,11 +1,14 @@
 <script setup>
 import { ref, computed } from "vue";
 import { watch, onUnmounted } from "vue";
-import { votingQuestions } from "../constants";
 
 const props = defineProps({
     show: Boolean,
     artist: Object,
+    questions: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const emit = defineEmits(["close", "submit"]);
@@ -55,26 +58,29 @@ onUnmounted(() => {
 });
 
 const currentQuestion = computed(
-    () => votingQuestions[currentQuestionIndex.value],
+    () => props.questions[currentQuestionIndex.value],
 );
 
+const handleNext = () => {
+    if (currentQuestionIndex.value < props.questions.length - 1) {
+        currentQuestionIndex.value++;
+    } else {
+        step.value = "COMMENT";
+    }
+};
+
 const handleRating = (rating) => {
-    if (isPaused.value) return; // Prevent voting while paused
+    if (isPaused.value) return;
     answers.value[currentQuestion.value.id] = rating;
 
-    // Auto advance
+    // Auto advance for rating
     setTimeout(() => {
-        if (currentQuestionIndex.value < votingQuestions.length - 1) {
-            currentQuestionIndex.value++;
-        } else {
-            step.value = "COMMENT";
-        }
+        handleNext();
     }, 300);
 };
 
 const submitVote = () => {
     isSubmitting.value = true;
-    // Simulate API call
     setTimeout(() => {
         isSubmitting.value = false;
         step.value = "SUCCESS";
@@ -87,7 +93,6 @@ const submitVote = () => {
 
 const close = () => {
     emit("close");
-    // Reset state for next time
     setTimeout(() => {
         step.value = "QUESTIONS";
         currentQuestionIndex.value = 0;
@@ -99,7 +104,8 @@ const close = () => {
 const progressWidth = computed(() => {
     if (step.value === "COMMENT") return "100%";
     if (step.value === "SUCCESS") return "100%";
-    return `${((currentQuestionIndex.value + 1) / (votingQuestions.length + 1)) * 100}%`;
+    const total = props.questions.length + 1;
+    return `${((currentQuestionIndex.value + 1) / total) * 100}%`;
 });
 </script>
 
@@ -193,8 +199,8 @@ const progressWidth = computed(() => {
                         <Transition name="fade-slide" mode="out-in">
                             <!-- STEP: QUESTIONS -->
                             <div
-                                v-if="step === 'QUESTIONS'"
-                                :key="currentQuestion.id"
+                                v-if="step === 'QUESTIONS' && currentQuestion"
+                                :key="currentQuestionIndex"
                                 class="space-y-8"
                             >
                                 <header>
@@ -211,14 +217,14 @@ const progressWidth = computed(() => {
                                         <span
                                             class="text-gray-500 text-[10px] font-bold"
                                             >{{ currentQuestionIndex + 1 }}/{{
-                                                votingQuestions.length
+                                                questions.length
                                             }}</span
                                         >
                                     </div>
                                     <h2
                                         class="text-xl font-black italic tracking-tight text-white leading-tight min-h-12"
                                     >
-                                        {{ currentQuestion.text }}
+                                        {{ currentQuestion.question_text }}
                                     </h2>
                                 </header>
 
@@ -239,36 +245,58 @@ const progressWidth = computed(() => {
                                 </div>
 
                                 <div v-else class="space-y-6">
-                                    <div class="flex justify-between gap-2">
-                                        <button
-                                            v-for="i in 5"
-                                            :key="i"
-                                            @click="handleRating(i)"
-                                            :class="[
-                                                'w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black transition-all active:scale-90',
-                                                answers[currentQuestion.id] ===
-                                                i
-                                                    ? 'bg-brand-yellow text-black scale-110 shadow-[0_0_15px_rgba(255,107,0,0.5)]'
-                                                    : 'bg-brand-gray text-gray-400 border border-white/5',
-                                            ]"
-                                        >
-                                            {{ i }}
-                                        </button>
+                                    <!-- RATING TYPE -->
+                                    <div
+                                        v-if="currentQuestion.type === 'rating'"
+                                        class="space-y-6"
+                                    >
+                                        <div class="flex justify-between gap-2">
+                                            <button
+                                                v-for="i in 5"
+                                                :key="i"
+                                                @click="handleRating(i)"
+                                                :class="[
+                                                    'w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black transition-all active:scale-90',
+                                                    answers[
+                                                        currentQuestion.id
+                                                    ] === i
+                                                        ? 'bg-brand-yellow text-black scale-110 shadow-[0_0_15px_rgba(255,107,0,0.5)]'
+                                                        : 'bg-brand-gray text-gray-400 border border-white/5',
+                                                ]"
+                                            >
+                                                {{ i }}
+                                            </button>
+                                        </div>
+
+                                        <div class="flex justify-between px-1">
+                                            <span
+                                                class="text-[10px] font-bold uppercase text-gray-500 tracking-wider"
+                                            >
+                                                {{ currentQuestion.low_label }}
+                                            </span>
+                                            <span
+                                                class="text-[10px] font-bold uppercase text-gray-500 tracking-wider text-right"
+                                            >
+                                                {{ currentQuestion.high_label }}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div class="flex justify-between px-1">
-                                        <span
-                                            class="text-[10px] font-bold uppercase text-gray-500 tracking-wider"
-                                            >{{
-                                                currentQuestion.lowLabel
-                                            }}</span
+                                    <!-- TEXT TYPE -->
+                                    <div v-else class="space-y-4">
+                                        <textarea
+                                            v-model="
+                                                answers[currentQuestion.id]
+                                            "
+                                            placeholder="Your answer..."
+                                            class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-32 outline-none focus:border-brand-yellow transition-all font-medium text-white resize-none"
+                                        ></textarea>
+                                        <button
+                                            @click="handleNext"
+                                            class="w-full bg-brand-yellow text-black font-black py-4 rounded-xl uppercase tracking-tighter text-sm flex items-center justify-center gap-2"
                                         >
-                                        <span
-                                            class="text-[10px] font-bold uppercase text-gray-500 tracking-wider text-right"
-                                            >{{
-                                                currentQuestion.highLabel
-                                            }}</span
-                                        >
+                                            Next Question
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -326,7 +354,7 @@ const progressWidth = computed(() => {
                                         @click="
                                             step = 'QUESTIONS';
                                             currentQuestionIndex =
-                                                votingQuestions.length - 1;
+                                                questions.length - 1;
                                         "
                                         class="w-full text-xs font-bold text-gray-500 uppercase tracking-widest"
                                     >

@@ -1,56 +1,20 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import HypeModal from "../../Components/HypeModal.vue";
 import { ref } from "vue";
 
-const judges = ref([
-    {
-        id: 1,
-        name: "Sauti Sol Member (Polycarp)",
-        role: "Technical Judge",
-        status: "active",
-        invites: 3,
-    },
-    {
-        id: 2,
-        name: "Muthoni Drummer Queen",
-        role: "Artistic Judge",
-        status: "active",
-        invites: 1,
-    },
-    {
-        id: 3,
-        name: "Bien-Aimé Baraza",
-        role: "Vocal Specialist",
-        status: "pending",
-        invites: 5,
-    },
-]);
-
 const showInviteModal = ref(false);
 const isSending = ref(false);
-const inviteForm = ref({
-    name: "",
+const judges = usePage().props.judges;
+const inviteForm = useForm({
+    nick_name: "",
     phone: "",
 });
 
 const sendInvite = async () => {
     isSending.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    judges.value.unshift({
-        id: Date.now(),
-        name: inviteForm.value.name,
-        role: "Guest Judge",
-        status: "pending",
-        invites: 1,
-        isNew: true,
-    });
-
-    isSending.value = false;
-    showInviteModal.value = false;
-    inviteForm.value = { name: "", phone: "" };
+    inviteForm.post("judges");
 };
 </script>
 
@@ -105,7 +69,7 @@ const sendInvite = async () => {
                             class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-brand-yellow group-hover:bg-brand-yellow/10 group-hover:border-brand-yellow/20 transition-all duration-500 overflow-hidden"
                         >
                             <span class="text-xs font-black uppercase">{{
-                                judge.name.substring(0, 2)
+                                judge.nick_name.substring(0, 2)
                             }}</span>
                         </div>
 
@@ -113,7 +77,7 @@ const sendInvite = async () => {
                             <h4
                                 class="text-lg font-black italic tracking-tighter uppercase leading-tight mb-0.5 truncate"
                             >
-                                {{ judge.name }}
+                                {{ judge.nick_name }}
                             </h4>
                             <div class="flex items-center gap-2">
                                 <span
@@ -179,7 +143,7 @@ const sendInvite = async () => {
                         >Judge Name</label
                     >
                     <input
-                        v-model="inviteForm.name"
+                        v-model="inviteForm.nick_name"
                         type="text"
                         placeholder="e.g. Sauti Sol member"
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 text-white"

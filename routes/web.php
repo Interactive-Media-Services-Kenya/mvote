@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\ArtistController;
+use App\Http\Controllers\JudgeController;
+use App\Http\Controllers\LineupController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,27 +18,22 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('/lineup', function () {
-        return Inertia::render('Lineup');
-    })->name('lineup');
+    Route::get('/lineup', [LineupController::class, 'index'])->name('lineup');
 
-    Route::get('/artist/{id}', function ($id) {
-        return Inertia::render('ArtistProfile', ['id' => $id]);
-    });
+    Route::get('/artist/{id}', [LineupController::class, 'artist']);
 
     Route::prefix('admin')->group(function () {
         Route::get('/dashboard', function () {
             return Inertia::render('Admin/Dashboard');
         });
-        Route::get('/artists', function () {
-            return Inertia::render('Admin/Artists');
-        });
-        Route::get('/event', function () {
-            return Inertia::render('Admin/EventSetup');
-        });
-        Route::get('/judges', function () {
-            return Inertia::render('Admin/Judges');
-        });
+        Route::get('/artists', [ArtistController::class, 'index']);
+        Route::get('/event', [EventController::class, 'index']);
+        Route::post('/event', [EventController::class, 'store']);
+        Route::get('/judges', [JudgeController::class, 'index']);
+        Route::post('/judges', [JudgeController::class, 'store']);
+
+        Route::post('/event/questions', [QuestionController::class, 'store'])->name('admin.questions.sync');
+        Route::delete('/event/questions/{question}', [QuestionController::class, 'destroy'])->name('admin.questions.delete');
     });
 });
 

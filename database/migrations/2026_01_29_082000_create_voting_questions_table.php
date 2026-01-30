@@ -14,7 +14,10 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('event_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('question_text');
-            $table->enum('type', ['rating', 'comment']);
+            $table->enum('type', ['rating', 'text']);
+            $table->string('low_label')->nullable();
+            $table->string('high_label')->nullable();
+            $table->enum('target', ['fan', 'judge', 'both'])->default('both');
             $table->integer('order')->default(0);
             $table->timestamps();
         });

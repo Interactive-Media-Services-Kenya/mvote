@@ -1,49 +1,72 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import HypeModal from "../../Components/HypeModal.vue";
-import { votingQuestions } from "../../constants";
 import { ref } from "vue";
 
-const eventDetails = ref({
-    title: "Kenya Music Awards 2026",
-    location: "Nairobi National Park",
-    totalCapacity: 5000,
+const props = defineProps({
+    event: Object,
+});
+
+const form = useForm({
+    id: props.event?.id || null,
+    name: props.event?.name || "",
+    description: props.event?.description || "",
+    is_active: props.event?.is_active ?? true,
+    questions: props.event?.questions || [],
 });
 
 const showQuestionModal = ref(false);
-const editingQuestion = ref(null);
+const editingIndex = ref(null);
 const isSaving = ref(false);
+
 const questionForm = ref({
-    id: "",
-    text: "",
-    lowLabel: "",
-    highLabel: "",
+    id: null,
+    question_text: "",
+    type: "rating",
+    low_label: "",
+    high_label: "",
     target: "both",
 });
 
-const openQuestionModal = (question = null) => {
-    if (question) {
-        editingQuestion.value = question;
-        questionForm.value = { ...question };
+const openQuestionModal = (index = null) => {
+    if (index !== null) {
+        editingIndex.value = index;
+        questionForm.value = { ...form.questions[index] };
     } else {
-        editingQuestion.value = null;
+        editingIndex.value = null;
         questionForm.value = {
-            id: `MQ_${Math.floor(Math.random() * 1000)}`,
-            text: "",
-            lowLabel: "",
-            highLabel: "",
+            id: null,
+            question_text: "",
+            type: "rating",
+            low_label: "Weak",
+            high_label: "Fire!",
             target: "both",
         };
     }
     showQuestionModal.value = true;
 };
 
-const saveQuestion = async () => {
-    isSaving.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    isSaving.value = false;
+const removeQuestion = (index) => {
+    form.questions.splice(index, 1);
+};
+
+const saveQuestion = () => {
+    if (editingIndex.value !== null) {
+        form.questions[editingIndex.value] = { ...questionForm.value };
+    } else {
+        form.questions.push({ ...questionForm.value });
+    }
     showQuestionModal.value = false;
+};
+
+const submitEvent = () => {
+    form.post("/admin/event", {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Success notification if needed
+        },
+    });
 };
 </script>
 
@@ -86,7 +109,7 @@ const saveQuestion = async () => {
                                 >Event Title</label
                             >
                             <input
-                                v-model="eventDetails.title"
+                                v-model="form.name"
                                 type="text"
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
                             />
@@ -94,18 +117,22 @@ const saveQuestion = async () => {
                         <div class="space-y-2">
                             <label
                                 class="text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1"
-                                >Deployment Venue</label
+                                >Brief Description</label
                             >
                             <input
-                                v-model="eventDetails.location"
+                                v-model="form.description"
                                 type="text"
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white placeholder:text-gray-700"
                             />
                         </div>
                         <button
-                            class="w-full bg-white/5 text-white/50 border border-white/10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:text-white hover:bg-white/10 transition-all active:scale-[0.98]"
+                            @click="submitEvent"
+                            :disabled="form.processing"
+                            class="w-full bg-white/5 text-white/50 border border-white/10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:text-white hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50"
                         >
-                            Apply Changes
+                            {{
+                                form.processing ? "Syncing..." : "Apply Changes"
+                            }}
                         </button>
                     </div>
                 </section>
@@ -125,14 +152,14 @@ const saveQuestion = async () => {
                         </div>
                         <span
                             class="text-[8px] font-black text-brand-yellow uppercase tracking-widest"
-                            >{{ votingQuestions.length }} Slots Active</span
+                            >{{ form.questions.length }} Slots Active</span
                         >
                     </div>
 
                     <div class="space-y-3">
                         <div
-                            v-for="q in votingQuestions"
-                            :key="q.id"
+                            v-for="(q, index) in form.questions"
+                            :key="index"
                             class="glass-card p-4 rounded-3xl border-white/5 group relative overflow-hidden active:scale-[0.99] transition-all"
                         >
                             <div class="relative z-10">
@@ -156,14 +183,15 @@ const saveQuestion = async () => {
                                                     : q.target
                                             }}
                                         </div>
-                                        <span
-                                            class="text-[8px] font-black uppercase text-gray-700 tracking-widest"
-                                            >{{ q.id }}</span
+                                        <div
+                                            class="px-2 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest border border-white/10 bg-white/5 text-gray-400"
                                         >
+                                            {{ q.type }}
+                                        </div>
                                     </div>
                                     <div class="flex gap-2">
                                         <button
-                                            @click="openQuestionModal(q)"
+                                            @click="openQuestionModal(index)"
                                             class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-500 hover:text-white transition-all bg-white/5 border border-white/10"
                                         >
                                             <svg
@@ -181,16 +209,38 @@ const saveQuestion = async () => {
                                                 />
                                             </svg>
                                         </button>
+                                        <button
+                                            @click="removeQuestion(index)"
+                                            class="w-8 h-8 rounded-xl flex items-center justify-center text-red-500/50 hover:text-red-500 transition-all bg-white/5 border border-white/10"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-3.5 w-3.5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
 
                                 <h4
                                     class="text-base font-black italic text-white mb-4 pr-6 leading-tight uppercase tracking-tighter"
                                 >
-                                    {{ q.text }}
+                                    {{ q.question_text }}
                                 </h4>
 
-                                <div class="flex gap-2">
+                                <div
+                                    v-if="q.type === 'rating'"
+                                    class="flex gap-2"
+                                >
                                     <div
                                         class="flex-1 px-3 py-2 bg-white/2 rounded-xl border border-white/5"
                                     >
@@ -200,7 +250,7 @@ const saveQuestion = async () => {
                                         >
                                         <span
                                             class="text-[9px] font-black uppercase text-brand-yellow italic"
-                                            >{{ q.lowLabel }}</span
+                                            >{{ q.low_label }}</span
                                         >
                                     </div>
                                     <div
@@ -212,9 +262,15 @@ const saveQuestion = async () => {
                                         >
                                         <span
                                             class="text-[9px] font-black uppercase text-brand-yellow italic"
-                                            >{{ q.highLabel }}</span
+                                            >{{ q.high_label }}</span
                                         >
                                     </div>
+                                </div>
+                                <div
+                                    v-else
+                                    class="text-[9px] font-black uppercase text-gray-500 tracking-widest italic"
+                                >
+                                    Full Text Input Field
                                 </div>
                             </div>
                         </div>
@@ -230,35 +286,62 @@ const saveQuestion = async () => {
             </div>
         </div>
 
-        <!-- Unified Hype Modal -->
         <HypeModal
             :show="showQuestionModal"
-            :title="editingQuestion ? 'Modify Metric' : 'Deploy Metric'"
+            :title="editingIndex !== null ? 'Modify Metric' : 'Deploy Metric'"
             subtitle="Protocol Configuration"
             maxWidth="max-w-md"
             @close="showQuestionModal = false"
         >
             <div class="space-y-6">
+                <!-- Question Text -->
                 <div class="space-y-2 text-left">
                     <label
                         class="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1"
                         >Metric Description</label
                     >
                     <textarea
-                        v-model="questionForm.text"
+                        v-model="questionForm.question_text"
                         placeholder="e.g. How much did you enjoy the energy?"
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-24 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 leading-tight text-white resize-none"
                     ></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <!-- Type Selector -->
+                <div class="space-y-3 text-left">
+                    <label
+                        class="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1"
+                        >Response Type</label
+                    >
+                    <div class="grid grid-cols-2 gap-2">
+                        <button
+                            v-for="type in ['rating', 'text']"
+                            :key="type"
+                            @click="questionForm.type = type"
+                            class="py-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all"
+                            :class="[
+                                questionForm.type === type
+                                    ? 'bg-brand-yellow text-black border-brand-yellow shadow-lg shadow-brand-yellow/20'
+                                    : 'bg-white/5 border-white/10 text-gray-500',
+                            ]"
+                        >
+                            {{ type }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Labels (Only for Rating) -->
+                <div
+                    v-if="questionForm.type === 'rating'"
+                    class="grid grid-cols-2 gap-4"
+                >
                     <div class="space-y-2 text-left">
                         <label
                             class="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1"
                             >Min. Label (1)</label
                         >
                         <input
-                            v-model="questionForm.lowLabel"
+                            v-model="questionForm.low_label"
                             type="text"
                             placeholder="e.g. Weak"
                             class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white placeholder:text-gray-700"
@@ -270,7 +353,7 @@ const saveQuestion = async () => {
                             >Max. Label (5)</label
                         >
                         <input
-                            v-model="questionForm.highLabel"
+                            v-model="questionForm.high_label"
                             type="text"
                             placeholder="e.g. Fire!"
                             class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white placeholder:text-gray-700"
@@ -306,40 +389,13 @@ const saveQuestion = async () => {
                 <div class="flex flex-col gap-3">
                     <button
                         @click="saveQuestion"
-                        :disabled="isSaving"
-                        class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden"
+                        class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all relative overflow-hidden"
                     >
-                        <span v-if="!isSaving">{{
-                            editingQuestion
+                        <span>{{
+                            editingIndex !== null
                                 ? "Sync Changes"
                                 : "Initialize Metric"
                         }}</span>
-                        <span
-                            v-else
-                            class="flex items-center justify-center gap-2"
-                        >
-                            <svg
-                                class="animate-spin h-4 w-4 text-black"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4"
-                                ></circle>
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
-                            Syncing...
-                        </span>
                     </button>
                     <button
                         @click="showQuestionModal = false"
