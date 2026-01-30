@@ -32,6 +32,55 @@ const formatVotes = (count) => {
     if (count >= 1000) return (count / 1000).toFixed(1) + "k";
     return count;
 };
+
+// Timer Logic for Floating Button
+const timeRemaining = ref("");
+const isTimerActive = ref(false);
+let timerInterval = null;
+
+const calculateTimeLeft = () => {
+    if (!liveArtist.value || !liveArtist.value.voting_ends_at) {
+        timeRemaining.value = "";
+        return;
+    }
+
+    if (liveArtist.value.is_voting_paused) {
+        timeRemaining.value = " (PAUSED)";
+        return;
+    }
+
+    const end = new Date(liveArtist.value.voting_ends_at).getTime();
+    const now = new Date().getTime();
+    const diff = end - now;
+
+    if (diff <= 0) {
+        timeRemaining.value = " (EXPIRED)";
+        return;
+    }
+
+    const minutes = Math.floor(diff / 1000 / 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    timeRemaining.value = ` (${minutes}:${seconds.toString().padStart(2, "0")})`;
+};
+
+import { onMounted, onUnmounted, watch } from "vue";
+
+onMounted(() => {
+    timerInterval = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+});
+
+onUnmounted(() => {
+    if (timerInterval) clearInterval(timerInterval);
+});
+
+watch(
+    () => liveArtist.value,
+    () => {
+        calculateTimeLeft();
+    },
+    { deep: true },
+);
 </script>
 
 <template>
@@ -182,13 +231,28 @@ const formatVotes = (count) => {
         >
             <button
                 v-if="liveArtist"
-                @click="openVoting(liveArtist)"
-                class="w-full bg-brand-yellow py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white"
+                @click="
+                    liveArtist.voting_started_at ? openVoting(liveArtist) : null
+                "
+                :class="[
+                    'w-full py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white',
+                    liveArtist.voting_started_at
+                        ? 'bg-brand-yellow'
+                        : 'bg-red-600/90',
+                ]"
             >
                 <span
-                    class="w-2 h-2 rounded-full bg-white animate-pulse"
+                    class="w-2 h-2 rounded-full bg-white"
+                    :class="{
+                        'animate-pulse':
+                            liveArtist.voting_started_at &&
+                            !liveArtist.is_voting_paused,
+                    }"
                 ></span>
-                Vote: {{ liveArtist.name }}
+                <span v-if="liveArtist.voting_started_at">
+                    Vote: {{ liveArtist.name }}{{ timeRemaining }}
+                </span>
+                <span v-else> Performing: {{ liveArtist.name }} </span>
             </button>
             <button
                 v-else

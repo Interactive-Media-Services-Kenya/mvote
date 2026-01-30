@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\PerformanceController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\LineupController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\VoteController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +20,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::post('/vote', [VoteController::class, 'store'])->name('vote.submit');
 
     Route::get('/lineup', [LineupController::class, 'index'])->name('lineup');
 
@@ -34,8 +37,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/judges', [JudgeController::class, 'index']);
         Route::post('/judges', [JudgeController::class, 'store']);
 
+        Route::post('/performance/start', [PerformanceController::class, 'start']);
+        Route::post('/performance/{performance}/open-voting', [PerformanceController::class, 'openVoting']);
+        Route::post('/performance/{performance}/toggle-pause', [PerformanceController::class, 'togglePause']);
+        Route::post('/performance/{performance}/adjust-time', [PerformanceController::class, 'adjustTime']);
+        Route::post('/performance/{performance}/end', [PerformanceController::class, 'end']);
+        Route::post('/performance/{performance}/reset', [PerformanceController::class, 'reset']);
+
         Route::post('/event/questions', [QuestionController::class, 'store'])->name('admin.questions.sync');
         Route::delete('/event/questions/{question}', [QuestionController::class, 'destroy'])->name('admin.questions.delete');
     });
 });
-

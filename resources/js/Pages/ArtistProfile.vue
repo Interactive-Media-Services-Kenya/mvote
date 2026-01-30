@@ -7,10 +7,56 @@ const props = defineProps({
 });
 
 const showVoting = ref(false);
-const liveArtistId = ref(1);
-
 const artist = computed(() => props.artist);
-const isLive = computed(() => artist.value.id === liveArtistId.value);
+const isLive = computed(() => artist.value?.status === "live");
+
+// Timer Logic
+const timeRemaining = ref("");
+let timerInterval = null;
+
+const calculateTimeLeft = () => {
+    if (!isLive.value || !artist.value.voting_ends_at) {
+        timeRemaining.value = "";
+        return;
+    }
+
+    if (artist.value.is_voting_paused) {
+        timeRemaining.value = " (PAUSED)";
+        return;
+    }
+
+    const end = new Date(artist.value.voting_ends_at).getTime();
+    const now = new Date().getTime();
+    const diff = end - now;
+
+    if (diff <= 0) {
+        timeRemaining.value = " (EXPIRED)";
+        return;
+    }
+
+    const minutes = Math.floor(diff / 1000 / 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    timeRemaining.value = ` (${minutes}:${seconds.toString().padStart(2, "0")})`;
+};
+
+import { onMounted, onUnmounted, watch } from "vue";
+
+onMounted(() => {
+    timerInterval = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+});
+
+onUnmounted(() => {
+    if (timerInterval) clearInterval(timerInterval);
+});
+
+watch(
+    () => artist.value,
+    () => {
+        calculateTimeLeft();
+    },
+    { deep: true },
+);
 
 const goBack = () => {
     window.history.back();
@@ -112,15 +158,30 @@ const goBack = () => {
 
                 <div class="flex gap-4 mb-8">
                     <button
-                        @click="isLive ? (showVoting = true) : null"
+                        @click="
+                            isLive && artist.voting_started_at
+                                ? (showVoting = true)
+                                : null
+                        "
+                        :disabled="artist.is_voting_paused && isLive"
                         :class="[
                             'px-8 py-3 rounded-full font-bold flex-1 active:scale-95 transition-transform uppercase text-sm tracking-widest',
                             isLive
-                                ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
+                                ? artist.is_voting_paused
+                                    ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
+                                    : artist.voting_started_at
+                                      ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
+                                      : 'bg-red-600 text-white'
                                 : 'bg-white text-black',
                         ]"
                     >
-                        {{ isLive ? "Vote Now" : "Follow" }}
+                        {{
+                            isLive
+                                ? artist.voting_started_at
+                                    ? `Vote Now ${timeRemaining}`
+                                    : "Performing Now"
+                                : "Follow"
+                        }}
                     </button>
                     <button
                         class="glass-card px-4 py-3 rounded-full active:scale-95 transition-transform border-white/20"

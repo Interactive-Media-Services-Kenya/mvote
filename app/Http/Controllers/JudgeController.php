@@ -15,6 +15,7 @@ class JudgeController extends Controller
             $query->where('name', 'judge');
         })
             ->with('role')
+            ->withCount('votes')
             ->get()
             ->map(function ($user) {
                 return [
@@ -23,7 +24,7 @@ class JudgeController extends Controller
                     'phone' => $user->phone,
                     'role' => $user->role->name ?? 'Judge',
                     'status' => 'active', // Default for now
-                    'invites' => $user->votes()->count(), // Using votes as a proxy for "dispatches" or activity
+                    'invites' => $user->votes_count, // Use the count from withCount
                 ];
             });
 

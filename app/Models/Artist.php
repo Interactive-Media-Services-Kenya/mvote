@@ -19,4 +19,9 @@ class Artist extends Model
     public function genre(){
         return $this->belongsTo(Genre::class);
     }
+
+    public function performances()
+    {
+        return $this->hasMany(Performance::class);
+    }
 }

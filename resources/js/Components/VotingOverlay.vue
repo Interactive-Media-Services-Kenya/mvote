@@ -20,20 +20,37 @@ const comment = ref("");
 const isSubmitting = ref(false);
 
 // Timer Logic
-const secondsRemaining = ref(props.artist?.votingSecondsRemaining || 10);
-const isPaused = ref(props.artist?.isVotingPaused || false);
+const secondsRemaining = ref(0);
+const isPaused = computed(() => props.artist?.is_voting_paused || false);
 let timerInterval = null;
+
+const calculateSecondsRemaining = () => {
+    if (!props.artist?.voting_ends_at) return;
+
+    const end = new Date(props.artist.voting_ends_at).getTime();
+    const now = new Date().getTime();
+    const diff = Math.max(0, Math.floor((end - now) / 1000));
+
+    secondsRemaining.value = diff;
+
+    if (diff === 0 && step.value !== "SUCCESS" && step.value !== "QUESTIONS") {
+        // Only expire if we are past questions or if specifically needed
+        // Actually, if it's 0, we should probably just show expired if they haven't submitted
+    }
+};
 
 const startTimer = () => {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (!isPaused.value && secondsRemaining.value > 0) {
-            secondsRemaining.value--;
-        } else if (secondsRemaining.value === 0 && step.value !== "SUCCESS") {
-            step.value = "EXPIRED";
-            clearInterval(timerInterval);
+        if (!isPaused.value) {
+            calculateSecondsRemaining();
+            if (secondsRemaining.value <= 0 && step.value === "QUESTIONS") {
+                step.value = "EXPIRED";
+                clearInterval(timerInterval);
+            }
         }
     }, 1000);
+    calculateSecondsRemaining();
 };
 
 const formatTime = (seconds) => {
@@ -50,6 +67,13 @@ watch(
         } else {
             if (timerInterval) clearInterval(timerInterval);
         }
+    },
+);
+
+watch(
+    () => props.artist?.voting_ends_at,
+    () => {
+        calculateSecondsRemaining();
     },
 );
 
@@ -79,16 +103,34 @@ const handleRating = (rating) => {
     }, 300);
 };
 
+import { router } from "@inertiajs/vue3";
+
 const submitVote = () => {
     isSubmitting.value = true;
-    setTimeout(() => {
-        isSubmitting.value = false;
-        step.value = "SUCCESS";
-        emit("submit", {
+
+    router.post(
+        "/vote",
+        {
+            artist_id: props.artist.id,
+            performance_id: props.artist.performance_id,
             ratings: answers.value,
             comment: comment.value,
-        });
-    }, 1500);
+        },
+        {
+            onSuccess: () => {
+                isSubmitting.value = false;
+                step.value = "SUCCESS";
+                emit("submit", {
+                    ratings: answers.value,
+                    comment: comment.value,
+                });
+            },
+            onError: () => {
+                isSubmitting.value = false;
+                // Optionally handle error state
+            },
+        },
+    );
 };
 
 const close = () => {

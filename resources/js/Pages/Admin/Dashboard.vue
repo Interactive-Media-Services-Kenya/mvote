@@ -1,15 +1,121 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { Head, router } from "@inertiajs/vue3";
+import { computed, ref, onMounted, onUnmounted, watch } from "vue";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 
 const props = defineProps({
     liveArtist: Object,
     stats: Array,
+    upcomingArtists: Array,
 });
 
 const liveArtist = computed(() => props.liveArtist);
 const stats = computed(() => props.stats);
+const upcomingArtists = computed(() => props.upcomingArtists);
+
+// Timer Logic
+const timeRemaining = ref("00:00");
+const secondsLeft = ref(0);
+let timerInterval = null;
+
+const calculateTimeLeft = () => {
+    if (!liveArtist.value || !liveArtist.value.voting_ends_at) {
+        timeRemaining.value = "00:00";
+        secondsLeft.value = 0;
+        return;
+    }
+
+    if (liveArtist.value.is_voting_paused) {
+        timeRemaining.value = "PAUSED";
+        return;
+    }
+
+    const end = new Date(liveArtist.value.voting_ends_at).getTime();
+    const now = new Date().getTime();
+    const diff = end - now;
+
+    if (diff <= 0) {
+        timeRemaining.value = "00:00 - EXPIRED";
+        secondsLeft.value = 0;
+        return;
+    }
+
+    const minutes = Math.floor(diff / 1000 / 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    timeRemaining.value = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")} Remaining`;
+    secondsLeft.value = Math.floor(diff / 1000);
+};
+
+onMounted(() => {
+    timerInterval = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+});
+
+onUnmounted(() => {
+    if (timerInterval) clearInterval(timerInterval);
+});
+
+watch(
+    () => props.liveArtist,
+    () => {
+        calculateTimeLeft();
+    },
+    { deep: true },
+);
+
+// Actions
+const goLive = (artistId) => {
+    if (
+        confirm(
+            "Set this artist to LIVE? This will close any active performance.",
+        )
+    ) {
+        router.post("/admin/performance/start", { artist_id: artistId });
+    }
+};
+
+const togglePause = () => {
+    if (!liveArtist.value) return;
+    router.post(
+        `/admin/performance/${liveArtist.value.performance_id}/toggle-pause`,
+    );
+};
+
+const addTime = (seconds) => {
+    if (!liveArtist.value) return;
+    router.post(
+        `/admin/performance/${liveArtist.value.performance_id}/adjust-time`,
+        { seconds },
+    );
+};
+
+const endPerformance = () => {
+    if (!liveArtist.value) return;
+    if (confirm("Close this performance for voting?")) {
+        router.post(
+            `/admin/performance/${liveArtist.value.performance_id}/end`,
+        );
+    }
+};
+
+const openVoting = () => {
+    if (!liveArtist.value) return;
+    router.post(
+        `/admin/performance/${liveArtist.value.performance_id}/open-voting`,
+    );
+};
+
+const resetPerformance = (performanceId) => {
+    if (
+        confirm(
+            "RESET this performance? This will delete all votes and allow the artist to perform again.",
+        )
+    ) {
+        router.post(`/admin/performance/${performanceId}/reset`);
+    }
+};
+
+const encodeName = (name) => encodeURIComponent(name);
 </script>
 
 <template>
@@ -120,25 +226,187 @@ const stats = computed(() => props.stats);
                         </p>
 
                         <div class="flex flex-col gap-2 relative z-10">
-                            <div
-                                class="bg-white/5 border border-white/5 py-2.5 rounded-xl mb-2"
-                            >
-                                <p
-                                    class="text-[10px] font-black italic tracking-tighter text-brand-yellow animate-pulse"
+                            <template v-if="liveArtist.voting_started_at">
+                                <div
+                                    class="bg-white/5 border border-white/5 py-2.5 rounded-xl mb-2"
                                 >
-                                    03:45 Remaining
-                                </p>
-                            </div>
+                                    <p
+                                        class="text-[10px] font-black italic tracking-tighter text-brand-yellow"
+                                        :class="{
+                                            'animate-pulse':
+                                                !liveArtist.is_voting_paused,
+                                        }"
+                                    >
+                                        {{ timeRemaining }}
+                                    </p>
+                                </div>
 
-                            <button
-                                class="w-full bg-yellow-500 text-black font-black py-3 rounded-xl uppercase text-[9px] tracking-widest shadow-lg active:scale-95 transition-all"
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button
+                                        @click="togglePause"
+                                        class="w-full bg-white/10 text-white font-black py-3 rounded-xl uppercase text-[9px] tracking-widest hover:bg-white/20 transition-all"
+                                    >
+                                        {{
+                                            liveArtist.is_voting_paused
+                                                ? "Resume"
+                                                : "Pause"
+                                        }}
+                                    </button>
+                                    <button
+                                        @click="endPerformance"
+                                        class="w-full bg-red-500/10 text-red-500 border border-red-500/20 font-black py-3 rounded-xl uppercase text-[9px] tracking-widest hover:bg-red-500/20 transition-all"
+                                    >
+                                        End Session
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button
+                                        @click="addTime(60)"
+                                        class="w-full glass-card py-3 rounded-xl font-black uppercase text-[9px] tracking-widest border-white/10 hover:bg-white/5 active:scale-95 transition-all"
+                                    >
+                                        +60s
+                                    </button>
+                                    <button
+                                        @click="addTime(-30)"
+                                        class="w-full glass-card py-3 rounded-xl font-black uppercase text-[9px] tracking-widest border-white/10 hover:bg-white/5 active:scale-95 transition-all"
+                                    >
+                                        -30s
+                                    </button>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <button
+                                    @click="openVoting"
+                                    class="w-full bg-brand-yellow text-black font-black py-4 rounded-xl uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse mb-2"
+                                >
+                                    Open Voting Window
+                                </button>
+                                <button
+                                    @click="endPerformance"
+                                    class="w-full bg-white/5 text-gray-500 font-black py-3 rounded-xl uppercase text-[9px] tracking-widest hover:bg-white/10 transition-all"
+                                >
+                                    Cancel Performance
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    v-else
+                    class="bg-white/5 border border-dashed border-white/10 p-12 rounded-3xl flex flex-col items-center justify-center text-center"
+                >
+                    <p
+                        class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-4"
+                    >
+                        No Transmissions Active
+                    </p>
+                    <p
+                        class="text-white/30 text-[9px] max-w-50 leading-relaxed uppercase font-black italic"
+                    >
+                        Select an artist from the roster below to begin
+                        broadcasting.
+                    </p>
+                </div>
+            </section>
+
+            <!-- On Deck Section -->
+            <section class="mb-12">
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-1.5 h-1.5 bg-brand-yellow rounded-full"
+                        ></div>
+                        <h3
+                            class="text-sm font-black italic uppercase tracking-wider"
+                        >
+                            On Deck
+                        </h3>
+                    </div>
+                    <span
+                        class="text-[9px] font-bold text-gray-500 uppercase tracking-widest"
+                        >{{ upcomingArtists?.length || 0 }} Roster Units</span
+                    >
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div
+                        v-for="artist in upcomingArtists"
+                        :key="artist.id"
+                        class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group"
+                        :class="
+                            artist.status === 'closed'
+                                ? 'opacity-60 grayscale'
+                                : 'hover:border-brand-yellow/30'
+                        "
+                    >
+                        <div
+                            class="w-12 h-12 rounded-xl overflow-hidden border border-white/10 relative"
+                        >
+                            <img
+                                :src="
+                                    artist.photo ||
+                                    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeName(artist.name)}`
+                                "
+                                class="w-full h-full object-cover"
+                            />
+                            <div
+                                v-if="artist.status === 'closed'"
+                                class="absolute inset-0 bg-black/60 flex items-center justify-center"
                             >
-                                Pause Session
-                            </button>
-                            <button
-                                class="w-full glass-card py-3 rounded-xl font-black uppercase text-[9px] tracking-widest border-white/10 hover:bg-white/5 active:scale-95 transition-all"
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 text-green-500"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h4
+                                class="text-xs font-black uppercase italic tracking-tighter"
                             >
-                                Add +60s
+                                {{ artist.name }}
+                            </h4>
+                            <p
+                                class="text-[8px] font-bold uppercase tracking-widest"
+                                :class="
+                                    artist.status === 'closed'
+                                        ? 'text-green-500/70'
+                                        : 'text-gray-500'
+                                "
+                            >
+                                {{
+                                    artist.status === "closed"
+                                        ? "Finished"
+                                        : "Awaiting Stage"
+                                }}
+                            </p>
+                        </div>
+                        <button
+                            v-if="artist.status === 'upcoming'"
+                            @click="goLive(artist.id)"
+                            class="px-4 py-2 bg-brand-yellow text-black text-[9px] font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-all"
+                        >
+                            Live
+                        </button>
+                        <div v-else class="flex gap-2">
+                            <div
+                                class="px-3 py-1 bg-white/5 text-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5"
+                            >
+                                Done
+                            </div>
+                            <button
+                                v-if="artist.performance_id"
+                                @click="resetPerformance(artist.performance_id)"
+                                class="px-3 py-1 bg-white/10 text-white/60 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5 hover:bg-white/20 transition-all"
+                            >
+                                Reset
                             </button>
                         </div>
                     </div>
