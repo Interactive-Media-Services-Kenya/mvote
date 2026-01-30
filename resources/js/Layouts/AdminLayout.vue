@@ -67,7 +67,7 @@ const navItems = [
             </main>
         </div>
 
-        <nav class="fixed bottom-8 w-full max-w-md z-50 pointer-events-none">
+        <nav class="fixed bottom-2 w-full max-w-md z-50 pointer-events-none">
             <div
                 class="bg-brand-black/80 backdrop-blur-2xl rounded-full p-2 px-6 flex items-center justify-between border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto mx-4"
             >

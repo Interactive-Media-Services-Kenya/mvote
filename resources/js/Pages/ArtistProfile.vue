@@ -39,7 +39,7 @@ const goBack = () => {
             <!-- Floating Back Button -->
             <button
                 @click="goBack"
-                class="absolute top-6 left-6 w-10 h-10 glass-card rounded-full flex items-center justify-center text-white z-10"
+                class="absolute top-4 left-4 size-10 glass-card rounded-full flex items-center justify-center text-white z-10"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

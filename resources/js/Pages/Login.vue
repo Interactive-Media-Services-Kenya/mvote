@@ -1,49 +1,42 @@
 <script setup>
-import { ref, reactive, computed } from "vue";
-import { Head, router } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
+import { Head, useForm } from "@inertiajs/vue3";
 
 const step = ref("IDENTIFY");
 
-const form = reactive({
+const form = useForm({
     phone: "",
-    nickname: "",
+    nick_name: "",
     otp: ["", "", "", "", ""],
 });
 
-const errors = reactive({
-    phone: "",
-    otp: "",
-});
-
-const isProcessing = ref(false);
-
 const isValidKenyanPhone = (phone) => {
-    const regex = /^(?:254|\+254|0)?(7|1)(?:(?:[0-9][0-9])|(?:0[0-8]))[0-9]{6}$/;
+    const regex =
+        /^(?:254|\+254|0)?(7|1)(?:(?:[0-9][0-9])|(?:0[0-8]))[0-9]{6}$/;
     return regex.test(phone.replace(/\s+/g, ""));
 };
 
 const handleIdentify = () => {
-    errors.phone = "";
+    form.clearErrors("phone");
     if (!form.phone) {
-        errors.phone = "Phone number is required";
+        form.setError("phone", "Phone number is required");
         return;
     }
-    
+
     if (!isValidKenyanPhone(form.phone)) {
-        errors.phone = "Please enter a valid Kenyan phone number";
+        form.setError("phone", "Please enter a valid Kenyan phone number");
         return;
     }
 
-    isProcessing.value = true;
-
-    setTimeout(() => {
-        isProcessing.value = false;
-        step.value = "OTP";
-    }, 1000);
+    form.post("/login/identify", {
+        onSuccess: () => {
+            step.value = "OTP";
+        },
+    });
 };
 
 const handleOtpInput = (index, event) => {
-    errors.otp = "";
+    form.clearErrors("otp");
     const val = event.data;
     if (val && !isNaN(val)) {
         form.otp[index] = val;
@@ -63,23 +56,14 @@ const handleOtpInput = (index, event) => {
 const isOtpComplete = computed(() => form.otp.every((v) => v !== ""));
 
 const handleVerify = () => {
-    errors.otp = "";
+    form.clearErrors("otp");
     if (!isOtpComplete.value) return;
-    
-    isProcessing.value = true;
 
-    // Simulate login + OTP validation (code: 12345)
-    setTimeout(() => {
-        const enteredOtp = form.otp.join("");
-        if (enteredOtp !== "12345") {
-            isProcessing.value = false;
-            errors.otp = "Invalid OTP. Use 12345 for demo.";
-            return;
-        }
-
-        isProcessing.value = false;
-        router.visit("/lineup");
-    }, 1500);
+    form.post("/login/verify", {
+        onError: () => {
+            form.otp = ["", "", "", "", ""];
+        },
+    });
 };
 </script>
 
@@ -114,20 +98,26 @@ const handleVerify = () => {
                         <div class="group">
                             <label
                                 class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-orange"
-                                :class="{ 'text-red-500': errors.phone }"
+                                :class="{ 'text-red-500': form.errors.phone }"
                             >
                                 Phone Number
                             </label>
                             <input
                                 v-model="form.phone"
-                                @input="errors.phone = ''"
+                                @input="form.clearErrors('phone')"
                                 type="tel"
                                 placeholder="07XX XXX XXX"
                                 class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-orange text-white px-5 py-4 rounded-2xl outline-none transition-all text-lg font-bold"
-                                :class="{ 'border-red-500/50 bg-red-500/5': errors.phone }"
+                                :class="{
+                                    'border-red-500/50 bg-red-500/5':
+                                        form.errors.phone,
+                                }"
                             />
-                            <p v-if="errors.phone" class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight animate-shake">
-                                {{ errors.phone }}
+                            <p
+                                v-if="form.errors.phone"
+                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight animate-shake"
+                            >
+                                {{ form.errors.phone }}
                             </p>
                         </div>
 
@@ -141,7 +131,7 @@ const handleVerify = () => {
                                 >
                             </label>
                             <input
-                                v-model="form.nickname"
+                                v-model="form.nick_name"
                                 type="text"
                                 placeholder=""
                                 class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-orange text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium"
@@ -151,10 +141,10 @@ const handleVerify = () => {
 
                     <button
                         @click="handleIdentify"
-                        :disabled="!form.phone || isProcessing"
+                        :disabled="!form.phone || form.processing"
                         class="w-full bg-brand-orange hover:bg-orange-500 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale uppercase tracking-tighter text-xl shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse"
                     >
-                        {{ isProcessing ? "Sending..." : "Get OTP" }}
+                        {{ form.processing ? "Sending..." : "Get OTP" }}
                     </button>
 
                     <p class="text-center text-xs text-gray-600 px-4">
@@ -182,21 +172,29 @@ const handleVerify = () => {
                             maxlength="1"
                             inputmode="numeric"
                             class="w-full aspect-square bg-brand-gray border-2 border-transparent focus:border-brand-orange text-center text-2xl font-black rounded-xl outline-none transition-all"
-                            :class="{ 'border-red-500/50 bg-red-500/5': errors.otp }"
+                            :class="{
+                                'border-red-500/50 bg-red-500/5':
+                                    form.errors.otp,
+                            }"
                             @input="handleOtpInput(i, $event)"
                         />
                     </div>
-                    <p v-if="errors.otp" class="text-red-500 text-center text-[10px] font-bold uppercase tracking-tight animate-shake">
-                        {{ errors.otp }}
+                    <p
+                        v-if="form.errors.otp"
+                        class="text-red-500 text-center text-[10px] font-bold uppercase tracking-tight animate-shake"
+                    >
+                        {{ form.errors.otp }}
                     </p>
 
                     <div class="space-y-4">
                         <button
                             @click="handleVerify"
-                            :disabled="!isOtpComplete || isProcessing"
+                            :disabled="!isOtpComplete || form.processing"
                             class="w-full bg-white hover:bg-gray-200 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 uppercase tracking-tighter text-xl"
                         >
-                            {{ isProcessing ? "Verifying..." : "Enter Arena" }}
+                            {{
+                                form.processing ? "Verifying..." : "Enter Arena"
+                            }}
                         </button>
 
                         <button

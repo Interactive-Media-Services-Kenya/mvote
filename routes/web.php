@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [LoginController::class, 'index']);
+Route::post('/login/identify', [LoginController::class, 'identify']);
+Route::post('/login/verify', [LoginController::class, 'verify']);
 
 Route::get('/lineup', function () {
     return Inertia::render('Lineup');

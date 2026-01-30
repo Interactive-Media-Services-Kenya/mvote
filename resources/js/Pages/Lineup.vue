@@ -116,7 +116,12 @@ const formatVotes = (count) => {
                                     <span
                                         class="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6B00]"
                                     ></span>
-                                    <span class="text-white drop-shadow-sm">{{ formatVotes(artist.voteCount) }} Votes</span>
+                                    <span class="text-white drop-shadow-sm"
+                                        >{{
+                                            formatVotes(artist.voteCount)
+                                        }}
+                                        Votes</span
+                                    >
                                 </div>
                                 <div
                                     v-else
@@ -131,13 +136,15 @@ const formatVotes = (count) => {
                                 v-if="artist.status === 'live'"
                                 class="absolute top-3 right-3 bg-red-600 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(220,38,38,0.5)] border border-red-400/20"
                             >
-                                <span class="w-1 h-1 rounded-full bg-white animate-pulse"></span>
+                                <span
+                                    class="w-1 h-1 rounded-full bg-white animate-pulse"
+                                ></span>
                                 Live
                             </div>
                         </Link>
 
                         <!-- Quick Vote Action -->
-                        <button
+                        <!-- <button
                             v-if="artist.status === 'live'"
                             @click="openVoting(artist)"
                             class="absolute -bottom-2 -right-2 w-10 h-10 bg-brand-orange text-black rounded-xl flex items-center justify-center shadow-xl active:scale-90 transition-transform z-10"
@@ -156,7 +163,7 @@ const formatVotes = (count) => {
                                     d="M12 4v16m8-8H4"
                                 />
                             </svg>
-                        </button>
+                        </button> -->
                     </div>
 
                     <h3 class="font-bold text-lg leading-tight truncate px-1">
@@ -200,7 +207,6 @@ const formatVotes = (count) => {
             @close="showVoting = false"
             @submit="null"
         />
-
     </div>
 </template>
 
