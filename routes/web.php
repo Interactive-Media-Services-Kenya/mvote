@@ -27,6 +27,8 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Admin/Dashboard');
         });
         Route::get('/artists', [ArtistController::class, 'index']);
+        Route::post('/artists', [ArtistController::class, 'store']);
+        Route::post('/artists/{artist}', [ArtistController::class, 'update']);
         Route::get('/event', [EventController::class, 'index']);
         Route::post('/event', [EventController::class, 'store']);
         Route::get('/judges', [JudgeController::class, 'index']);

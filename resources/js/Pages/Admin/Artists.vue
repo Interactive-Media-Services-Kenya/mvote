@@ -1,40 +1,66 @@
 <script setup>
-import { Head, usePage } from "@inertiajs/vue3";
+import { Head, usePage, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../../Layouts/AdminLayout.vue";
 import HypeModal from "../../Components/HypeModal.vue";
-import { artists } from "../../constants";
-import { ref, toRaw } from "vue";
+import { ref } from "vue";
 
-const showAddModal = ref(false);
-const isSubmitting = ref(false);
-const newArtist = ref({
-    name: "",
-    genre: "",
-    bio: "",
-    discography: [{ title: "", year: "" }],
+const props = defineProps({
+    artists: Array,
+    genres: Array,
 });
 
-const addDiscographyRow = () => {
-    newArtist.value.discography.push({ title: "", year: "" });
+const showAddModal = ref(false);
+const isEditing = ref(false);
+const editingId = ref(null);
+
+const form = useForm({
+    name: "",
+    genre_id: "",
+    bio: "",
+    photo: null,
+});
+
+const genres = props.genres;
+const artists = props.artists;
+
+const openAddModal = () => {
+    isEditing.value = false;
+    editingId.value = null;
+    form.reset();
+    showAddModal.value = true;
 };
 
-const genres = usePage().props.genres;
+const openEditModal = (artist) => {
+    isEditing.value = true;
+    editingId.value = artist.id;
+    form.name = artist.name;
+    form.genre_id =
+        props.genres.find((g) => g.title === artist.genre)?.id || "";
+    form.bio = artist.bio || ""; // Note: Artist list might need bio if not loaded
+    form.photo = null; // Don't pre-fill file input with URL
+    showAddModal.value = true;
+};
 
-const onboardArtist = async () => {
-    isSubmitting.value = true;
-    console.log("Onboarding New Artist:", toRaw(newArtist.value));
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    isSubmitting.value = false;
-    showAddModal.value = false;
-
-    newArtist.value = {
-        name: "",
-        genre: "",
-        bio: "",
-        discography: [{ title: "", year: "" }],
-    };
+const submitForm = () => {
+    if (isEditing.value) {
+        form.post(`/admin/artists/${editingId.value}`, {
+            onSuccess: () => {
+                showAddModal.value = false;
+                form.reset();
+            },
+            forceFormData: true,
+            onBefore: () => {
+                form._method = "PUT"; // Use common Laravel trick for file upload with PUT
+            },
+        });
+    } else {
+        form.post("/admin/artists", {
+            onSuccess: () => {
+                showAddModal.value = false;
+                form.reset();
+            },
+        });
+    }
 };
 </script>
 
@@ -121,6 +147,7 @@ const onboardArtist = async () => {
                             class="w-2 h-2 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]"
                         ></div>
                         <button
+                            @click="openEditModal(artist)"
                             class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                         >
                             <svg
@@ -166,12 +193,61 @@ const onboardArtist = async () => {
         <!-- Unified Hype Modal -->
         <HypeModal
             :show="showAddModal"
-            title="Onboard Artist"
-            subtitle="Lineup expansion"
+            :title="isEditing ? 'Update Profile' : 'Onboard Artist'"
+            :subtitle="
+                isEditing ? 'Live Session Modification' : 'Lineup expansion'
+            "
             maxWidth="max-w-md"
             @close="showAddModal = false"
         >
             <div class="space-y-6">
+                <!-- Photo Upload Section -->
+                <div class="flex flex-col items-center gap-4">
+                    <div
+                        class="w-24 h-24 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex items-center justify-center relative overflow-hidden group hover:border-brand-yellow/30 transition-all"
+                    >
+                        <input
+                            type="file"
+                            @input="form.photo = $event.target.files[0]"
+                            class="absolute inset-0 opacity-0 cursor-pointer z-10"
+                            accept="image/*"
+                        />
+                        <img
+                            v-if="form.photo"
+                            :src="URL.createObjectURL(form.photo)"
+                            class="w-full h-full object-cover"
+                        />
+                        <img
+                            v-else-if="isEditing && editingId"
+                            :src="
+                                artists.find((a) => a.id === editingId)?.image
+                            "
+                            class="w-full h-full object-cover"
+                        />
+                        <div v-else class="text-gray-500">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-8 w-8 text-white/20"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+                    <span
+                        class="text-[9px] font-black uppercase tracking-widest text-gray-500"
+                    >
+                        {{ form.photo ? "Photo Ready" : "Upload Artist Photo" }}
+                    </span>
+                </div>
+
                 <!-- Basic Info Section -->
                 <div class="space-y-2">
                     <label
@@ -179,7 +255,7 @@ const onboardArtist = async () => {
                         >Artist Name</label
                     >
                     <input
-                        v-model="newArtist.name"
+                        v-model="form.name"
                         type="text"
                         placeholder="e.g. Burna Boy"
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold placeholder:text-gray-700 text-white"
@@ -193,7 +269,7 @@ const onboardArtist = async () => {
                     </label>
                     <div class="relative group">
                         <select
-                            v-model="newArtist.genre"
+                            v-model="form.genre_id"
                             class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white appearance-none cursor-pointer"
                         >
                             <option
@@ -207,7 +283,7 @@ const onboardArtist = async () => {
                             <option
                                 v-for="genre in genres"
                                 :key="genre.id"
-                                :value="genre.title"
+                                :value="genre.id"
                                 class="bg-zinc-900 text-white py-2"
                             >
                                 {{ genre.title }}
@@ -239,86 +315,27 @@ const onboardArtist = async () => {
                         >Biography</label
                     >
                     <textarea
-                        v-model="newArtist.bio"
+                        v-model="form.bio"
                         placeholder="Tell the fans why they should vote..."
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 h-32 outline-none focus:border-brand-yellow transition-all font-medium resize-none placeholder:text-gray-700 leading-relaxed text-white"
                     ></textarea>
-                </div>
-
-                <!-- Discography Section -->
-                <div class="space-y-4 pt-4 border-t border-white/5">
-                    <div class="flex items-center justify-between px-1">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-1 h-3 bg-brand-yellow rounded-full"
-                            ></div>
-                            <h4
-                                class="text-[10px] font-black uppercase tracking-widest text-white"
-                            >
-                                Discography
-                            </h4>
-                        </div>
-                        <button
-                            @click="addDiscographyRow"
-                            class="text-[9px] font-black uppercase tracking-widest text-brand-yellow hover:text-white transition-colors"
-                        >
-                            + Add Entry
-                        </button>
-                    </div>
-
-                    <div
-                        class="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2"
-                    >
-                        <div
-                            v-for="(album, i) in newArtist.discography"
-                            :key="i"
-                            class="flex gap-3 animate-fade-up"
-                        >
-                            <input
-                                v-model="album.title"
-                                type="text"
-                                placeholder="Album Title"
-                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-white"
-                            />
-                            <input
-                                v-model="album.year"
-                                type="text"
-                                placeholder="Year"
-                                class="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-brand-yellow transition-all font-bold text-xs text-center text-white"
-                            />
-                            <button
-                                v-if="newArtist.discography.length > 1"
-                                @click="newArtist.discography.splice(i, 1)"
-                                class="w-11 h-11 shrink-0 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors bg-white/5 rounded-xl border border-white/5"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <template #footer>
                 <div class="flex flex-col gap-3">
                     <button
-                        @click="onboardArtist"
-                        :disabled="isSubmitting"
+                        @click="submitForm"
+                        :disabled="form.processing"
                         class="w-full bg-brand-yellow text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden"
                     >
-                        <span v-if="!isSubmitting">Confirm Onboarding</span>
+                        <span v-if="!form.processing">
+                            {{
+                                isEditing
+                                    ? "Push Updates"
+                                    : "Confirm Onboarding"
+                            }}
+                        </span>
                         <span
                             v-else
                             class="flex items-center justify-center gap-2"
@@ -350,7 +367,9 @@ const onboardArtist = async () => {
                         @click="showAddModal = false"
                         class="w-full py-2 rounded-xl font-black uppercase text-[10px] tracking-widest text-gray-500 hover:text-white transition-all"
                     >
-                        Cancel Onboarding
+                        {{
+                            isEditing ? "Discard Changes" : "Cancel Onboarding"
+                        }}
                     </button>
                 </div>
             </template>

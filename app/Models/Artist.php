@@ -14,4 +14,8 @@ class Artist extends Model
         'is_active',
         'genre_id'
     ];
+
+    public function genre(){
+        return $this->belongsTo(Genre::class);
+    }
 }

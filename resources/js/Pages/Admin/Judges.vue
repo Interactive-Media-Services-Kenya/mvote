@@ -132,15 +132,15 @@ const sendInvite = async () => {
         <!-- Reusable Hype Modal -->
         <HypeModal
             :show="showInviteModal"
-            title="Dispatch Access"
-            subtitle="Security Protocol"
+            title="Judge Profile"
+            subtitle="Technical Oversight"
             @close="showInviteModal = false"
         >
             <div class="space-y-6">
                 <div class="space-y-2 text-left">
                     <label
                         class="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1"
-                        >Judge Name</label
+                        >Professional Alias</label
                     >
                     <input
                         v-model="inviteForm.nick_name"
@@ -152,7 +152,7 @@ const sendInvite = async () => {
                 <div class="space-y-2 text-left">
                     <label
                         class="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1"
-                        >Phone Number (SMS Target)</label
+                        >Primary Contact (Mobile)</label
                     >
                     <input
                         v-model="inviteForm.phone"
@@ -168,8 +168,8 @@ const sendInvite = async () => {
                     <p
                         class="text-[9px] text-blue-400 font-bold leading-relaxed uppercase tracking-wider italic text-center"
                     >
-                        * Automated transmission will include a secure one-time
-                        login link.
+                        * A secure one-time login link will be generated for the
+                        authorized judge.
                     </p>
                 </div>
             </div>
@@ -181,7 +181,7 @@ const sendInvite = async () => {
                         :disabled="isSending"
                         class="w-full bg-brand-yellow text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden"
                     >
-                        <span v-if="!isSending">Transmit Dispatch</span>
+                        <span v-if="!isSending">Verify & Add Judge</span>
                         <span
                             v-else
                             class="flex items-center justify-center gap-2"
@@ -206,14 +206,14 @@ const sendInvite = async () => {
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                 ></path>
                             </svg>
-                            Transmitting...
+                            Verifying...
                         </span>
                     </button>
                     <button
                         @click="showInviteModal = false"
                         class="w-full py-2 rounded-xl font-black uppercase text-[10px] tracking-widest text-gray-500 hover:text-white transition-all"
                     >
-                        Discard Session
+                        Discard Setup
                     </button>
                 </div>
             </template>

@@ -10,4 +10,8 @@ class Genre extends Model
         'title',
         'description'
     ];
+
+    public function artists(){
+        return $this->hasMany(Artist::class);
+    }
 }
