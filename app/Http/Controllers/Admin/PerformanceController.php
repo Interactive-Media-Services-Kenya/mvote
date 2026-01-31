@@ -8,6 +8,7 @@ use App\Models\Performance;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Events\PerformanceUpdated;
 
 class PerformanceController extends Controller
 {
@@ -44,6 +45,8 @@ class PerformanceController extends Controller
             'is_voting_paused' => false,
         ]);
 
+        PerformanceUpdated::dispatch($performance, "{$artist->name} is now ON STAGE!");
+
         return back()->with('success', "{$artist->name} is now ON STAGE!");
     }
 
@@ -54,6 +57,8 @@ class PerformanceController extends Controller
             'voting_ends_at' => now()->addMinutes(3), // Default 3 mins
         ]);
 
+        PerformanceUpdated::dispatch($performance, 'Voting is now OPEN!');
+
         return back()->with('success', 'Voting is now OPEN!');
     }
 
@@ -63,7 +68,10 @@ class PerformanceController extends Controller
             'is_voting_paused' => !$performance->is_voting_paused
         ]);
 
-        return back()->with('success', $performance->is_voting_paused ? 'Voting PAUSED' : 'Voting RESUMED');
+        $msg = $performance->is_voting_paused ? 'Voting PAUSED' : 'Voting RESUMED';
+        PerformanceUpdated::dispatch($performance, $msg);
+
+        return back()->with('success', $msg);
     }
 
     public function adjustTime(Request $request, Performance $performance)
@@ -77,6 +85,8 @@ class PerformanceController extends Controller
         ]);
 
         $msg = $request->seconds > 0 ? "Added " . abs($request->seconds) . "s" : "Reduced " . abs($request->seconds) . "s";
+        PerformanceUpdated::dispatch($performance, "Time adjusted: {$msg}");
+
         return back()->with('success', "Time adjusted: {$msg}");
     }
 
@@ -89,6 +99,8 @@ class PerformanceController extends Controller
 
         $performance->artist->update(['status' => 'closed']);
 
+        PerformanceUpdated::dispatch($performance, 'Performance CLOSED');
+
         return back()->with('success', 'Performance CLOSED');
     }
 
@@ -98,6 +110,8 @@ class PerformanceController extends Controller
 
         $performance->votes()->delete();
         $performance->delete();
+
+        PerformanceUpdated::dispatch(null, 'Performance RESET');
 
         return back()->with('success', 'Performance RESET. Artist can go live again.');
     }

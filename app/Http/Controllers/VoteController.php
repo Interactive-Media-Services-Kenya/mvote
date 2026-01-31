@@ -56,6 +56,8 @@ class VoteController extends Controller
             ]);
         }
 
+        \App\Events\PerformanceUpdated::dispatch($performance, 'New vote cast');
+
         return back()->with('success', 'Vote submitted successfully!');
     }
 }

@@ -29,8 +29,8 @@ class AudienceController extends Controller
 
         $performanceData = null;
         if ($activePerformance) {
-            $voteCount = Vote::where('performance_id', $activePerformance->id)->count();
-            $avgRating = Vote::where('performance_id', $activePerformance->id)->avg('rating') ?: 0;
+            $voteCount = Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id');
+            $avgRating = $activePerformance->average_score;
 
             $performanceData = [
                 'id' => $activePerformance->id,

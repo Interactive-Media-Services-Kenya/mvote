@@ -10,6 +10,7 @@ const props = defineProps({
 // Timer Logic
 const timeRemaining = ref("");
 let timerInterval = null;
+const liveVoterCount = ref(props.stats.activeFans || 0);
 
 const calculateTimeLeft = () => {
     if (!props.activePerformance || !props.activePerformance.voting_ends_at) {
@@ -36,8 +37,6 @@ const calculateTimeLeft = () => {
     timeRemaining.value = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-// Poll for updates every 5 seconds (Simple live feel)
-let pollInterval = null;
 const refreshData = () => {
     router.reload({
         preserveScroll: true,
@@ -47,13 +46,37 @@ const refreshData = () => {
 
 onMounted(() => {
     timerInterval = setInterval(calculateTimeLeft, 1000);
-    pollInterval = setInterval(refreshData, 5000);
     calculateTimeLeft();
+
+    // Listen for real-time updates
+    if (window.Echo) {
+        window.Echo.channel("performances").listen(
+            ".performance.updated",
+            (e) => {
+                refreshData();
+            },
+        );
+
+        window.Echo.join("voters")
+            .here((users) => {
+                liveVoterCount.value = users.filter(
+                    (u) => u.role === "fan",
+                ).length;
+            })
+            .joining((user) => {
+                if (user.role === "fan") liveVoterCount.value++;
+            })
+            .leaving((user) => {
+                if (user.role === "fan") liveVoterCount.value--;
+            });
+    }
 });
 
 onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
-    if (pollInterval) clearInterval(pollInterval);
+    if (window.Echo) {
+        window.Echo.leaveChannel("performances");
+    }
 });
 
 const voteProgress = computed(() => {
@@ -96,7 +119,7 @@ const voteProgress = computed(() => {
                     <p
                         class="text-4xl font-black italic tabular-nums text-green-500"
                     >
-                        {{ stats.activeFans }}
+                        {{ liveVoterCount || stats.activeFans }}
                     </p>
                 </div>
                 <div class="text-right">

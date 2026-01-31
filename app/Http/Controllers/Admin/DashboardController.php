@@ -63,7 +63,7 @@ class DashboardController extends Controller
             ],
             [
                 'label' => 'Avg Rating',
-                'value' => '0.0', 
+                'value' => $activePerformance ? number_format($activePerformance->average_score, 1) : '0.0', 
                 'trend' => 'Stars',
                 'color' => 'text-white'
             ],

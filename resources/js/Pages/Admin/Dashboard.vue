@@ -47,12 +47,26 @@ const calculateTimeLeft = () => {
 };
 
 onMounted(() => {
-    timerInterval = setInterval(calculateTimeLeft, 1000);
-    calculateTimeLeft();
+    console.log("Echo listener starting..."); // Step 1: Check if this runs
+
+    if (window.Echo) {
+        window.Echo.channel("performances").listen(
+            ".performance.updated",
+            (e) => {
+                // Step 2: The DOT is critical
+                console.log("EVENT RECEIVED!", e);
+                router.reload({ preserveScroll: true });
+            },
+        );
+    } else {
+        console.error("Echo is not defined on window!");
+    }
 });
 
 onUnmounted(() => {
-    if (timerInterval) clearInterval(timerInterval);
+    if (window.Echo) {
+        window.Echo.leaveChannel("performances");
+    }
 });
 
 watch(
@@ -86,6 +100,7 @@ const addTime = (seconds) => {
     router.post(
         `/admin/performance/${liveArtist.value.performance_id}/adjust-time`,
         { seconds },
+        { preserveScroll: true },
     );
 };
 
@@ -111,7 +126,9 @@ const resetPerformance = (performanceId) => {
             "RESET this performance? This will delete all votes and allow the artist to perform again.",
         )
     ) {
-        router.post(`/admin/performance/${performanceId}/reset`);
+        router.post(`/admin/performance/${performanceId}/reset`, {
+            preserveScroll: true,
+        });
     }
 };
 

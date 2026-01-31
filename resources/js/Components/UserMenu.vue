@@ -7,6 +7,13 @@ const user = computed(() => page.props.auth?.user);
 
 const isOpen = ref(false);
 const dropdownRef = ref(null);
+const activeVoters = ref([]);
+
+const updateVoterCount = () => {
+    // If the page has an activeFans prop (AudienceDisplay), we can try to update it
+    // But better to just emit or rely on a global store if available.
+    // For now, let's just log and maintain state here.
+};
 
 const toggleMenu = () => {
     isOpen.value = !isOpen.value;
@@ -24,10 +31,28 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
     document.addEventListener("mousedown", handleClickOutside);
+
+    if (window.Echo) {
+        window.Echo.join("voters")
+            .here((users) => {
+                activeVoters.value = users;
+            })
+            .joining((user) => {
+                activeVoters.value.push(user);
+            })
+            .leaving((user) => {
+                activeVoters.value = activeVoters.value.filter(
+                    (u) => u.id !== user.id,
+                );
+            });
+    }
 });
 
 onUnmounted(() => {
     document.removeEventListener("mousedown", handleClickOutside);
+    if (window.Echo) {
+        window.Echo.leave("voters");
+    }
 });
 
 const avatarUrl = computed(() => {

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 import UserMenu from "../Components/UserMenu.vue";
 import VotingOverlay from "../Components/VotingOverlay.vue";
 const props = defineProps({
@@ -70,10 +70,23 @@ import { onMounted, onUnmounted, watch } from "vue";
 onMounted(() => {
     timerInterval = setInterval(calculateTimeLeft, 1000);
     calculateTimeLeft();
+
+    // Listen for real-time updates
+    if (window.Echo) {
+        window.Echo.channel("performances").listen(
+            ".performance.updated",
+            (e) => {
+                router.reload({ preserveScroll: true });
+            },
+        );
+    }
 });
 
 onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
+    if (window.Echo) {
+        window.Echo.leaveChannel("performances");
+    }
 });
 
 watch(
