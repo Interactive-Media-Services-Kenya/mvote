@@ -16,7 +16,7 @@ class ArtistSeeder extends Seeder
             [
                 'name' => 'Sauti Sol',
                 'genre' => 'Afro-Pop',
-                'status' => 'live',
+                'status' => 'upcoming',
                 'bio' => 'Sauti Sol is an award-winning afro-pop group from Nairobi, Kenya.',
                 'photo' => 'https://api.dicebear.com/7.x/initials/svg?seed=Sauti%20Sol',
             ],
@@ -37,14 +37,14 @@ class ArtistSeeder extends Seeder
             [
                 'name' => 'Tems',
                 'genre' => 'Alt-R&B',
-                'status' => 'closed',
+                'status' => 'upcoming',
                 'bio' => 'Tems is a Nigerian singer and songwriter.',
                 'photo' => 'https://api.dicebear.com/7.x/initials/svg?seed=Tems',
             ],
             [
                 'name' => 'Diamond Platnumz',
                 'genre' => 'Bongo Flava',
-                'status' => 'closed',
+                'status' => 'upcoming',
                 'bio' => 'The King of Bongo Flava.',
                 'photo' => 'https://api.dicebear.com/7.x/initials/svg?seed=Diamond%20Platnumz',
             ],

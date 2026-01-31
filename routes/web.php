@@ -26,10 +26,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/vote', [VoteController::class, 'store'])->name('vote.submit');
 
     Route::get('/lineup', [LineupController::class, 'index'])->name('lineup');
+    Route::get('/audience', [\App\Http\Controllers\AudienceController::class, 'index'])->name('audience.display');
 
     Route::get('/artist/{id}', [LineupController::class, 'artist']);
 
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/artists', [ArtistController::class, 'index']);
         Route::post('/artists', [ArtistController::class, 'store']);

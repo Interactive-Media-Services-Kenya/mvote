@@ -157,23 +157,20 @@ watch(
                             <div
                                 class="absolute inset-x-0 bottom-0 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent"
                             >
-                                <!-- Vote Count Badge -->
+                                <!-- Voted Badge -->
                                 <div
-                                    v-if="artist.status !== 'upcoming'"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-[10px] uppercase font-black tracking-tight shadow-2xl"
+                                    v-if="artist.hasVoted"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-green-500/20 backdrop-blur-md border border-green-500/30 text-[10px] uppercase font-black tracking-tight shadow-2xl"
                                 >
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full bg-brand-yellow shadow-[0_0_8px_#FF6B00]"
+                                        class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"
                                     ></span>
-                                    <span class="text-white drop-shadow-sm"
-                                        >{{
-                                            formatVotes(artist.voteCount)
-                                        }}
-                                        Votes</span
+                                    <span class="text-green-500 drop-shadow-sm"
+                                        >Voted</span
                                     >
                                 </div>
                                 <div
-                                    v-else
+                                    v-else-if="artist.status === 'upcoming'"
                                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/5 text-[9px] uppercase font-bold text-gray-300 shadow-xl"
                                 >
                                     Upcoming
@@ -234,16 +231,22 @@ watch(
             <button
                 v-if="liveArtist"
                 @click="
-                    liveArtist.voting_started_at ? openVoting(liveArtist) : null
+                    liveArtist.voting_started_at && !liveArtist.hasVoted
+                        ? openVoting(liveArtist)
+                        : null
                 "
                 :class="[
                     'w-full py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white',
-                    liveArtist.voting_started_at
-                        ? 'bg-brand-yellow'
-                        : 'bg-red-600/90',
+                    liveArtist.hasVoted
+                        ? 'bg-green-600'
+                        : liveArtist.voting_started_at
+                          ? 'bg-brand-yellow'
+                          : 'bg-red-600/90',
                 ]"
+                :disabled="liveArtist.hasVoted"
             >
                 <span
+                    v-if="!liveArtist.hasVoted"
                     class="w-2 h-2 rounded-full bg-white"
                     :class="{
                         'animate-pulse':
@@ -251,7 +254,10 @@ watch(
                             !liveArtist.is_voting_paused,
                     }"
                 ></span>
-                <span v-if="liveArtist.voting_started_at">
+                <span v-if="liveArtist.hasVoted">
+                    Voted for {{ liveArtist.name }}
+                </span>
+                <span v-else-if="liveArtist.voting_started_at">
                     Vote: {{ liveArtist.name }}{{ timeRemaining }}
                 </span>
                 <span v-else> Performing: {{ liveArtist.name }} </span>

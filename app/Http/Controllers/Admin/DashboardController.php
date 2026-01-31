@@ -55,7 +55,9 @@ class DashboardController extends Controller
             ],
             [
                 'label' => 'Active Fans',
-                'value' => '0', 
+                'value' => number_format(\Illuminate\Support\Facades\DB::table('sessions')
+                    ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
+                    ->count()), 
                 'trend' => 'Live',
                 'color' => 'text-green-500',
             ],

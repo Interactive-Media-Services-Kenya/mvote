@@ -166,28 +166,37 @@ const goBack = () => {
                 <div class="flex gap-4 mb-8">
                     <button
                         @click="
-                            isLive && artist.voting_started_at
+                            isLive &&
+                            artist.voting_started_at &&
+                            !artist.hasVoted
                                 ? (showVoting = true)
                                 : null
                         "
-                        :disabled="artist.is_voting_paused && isLive"
+                        :disabled="
+                            (artist.is_voting_paused && isLive) ||
+                            artist.hasVoted
+                        "
                         :class="[
                             'px-8 py-3 rounded-full font-bold flex-1 active:scale-95 transition-transform uppercase text-sm tracking-widest',
-                            isLive
-                                ? artist.is_voting_paused
-                                    ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
-                                    : artist.voting_started_at
-                                      ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
-                                      : 'bg-red-600 text-white'
-                                : 'bg-white text-black',
+                            artist.hasVoted
+                                ? 'bg-green-600 text-white'
+                                : isLive
+                                  ? artist.is_voting_paused
+                                      ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
+                                      : artist.voting_started_at
+                                        ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
+                                        : 'bg-red-600 text-white'
+                                  : 'bg-white text-black',
                         ]"
                     >
                         {{
-                            isLive
-                                ? artist.voting_started_at
-                                    ? `Vote Now ${timeRemaining}`
-                                    : "Performing Now"
-                                : "Follow"
+                            artist.hasVoted
+                                ? "Voted"
+                                : isLive
+                                  ? artist.voting_started_at
+                                      ? `Vote Now ${timeRemaining}`
+                                      : "Performing Now"
+                                  : "Follow"
                         }}
                     </button>
                     <button

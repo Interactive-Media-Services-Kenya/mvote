@@ -25,6 +25,15 @@ class VoteController extends Controller
             return back()->with('error', 'Voting session is closed.');
         }
 
+        // Check if user has already voted for this performance
+        $existingVote = Vote::where('user_id', $user->id)
+            ->where('performance_id', $performance->id)
+            ->exists();
+
+        if ($existingVote) {
+            return back()->with('error', 'You have already voted for this performance.');
+        }
+
         foreach ($request->ratings as $questionId => $answer) {
             $question = \App\Models\VotingQuestion::find($questionId);
             
