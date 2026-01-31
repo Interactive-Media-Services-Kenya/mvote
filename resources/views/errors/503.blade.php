@@ -80,9 +80,9 @@
         <div class="min-h-screen flex flex-col items-center justify-center p-6 relative">
 
             <div class="absolute inset-0 z-0">
-                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/90 to-transparent z-10">
+                <div class="absolute inset-0 bg-linear-to-t from-brand-black via-brand-black/90 to-transparent z-10">
                 </div>
-                <img src="/assets/carousel_1.png" class="w-full h-full object-cover opacity-30 blur-[4px] scale-105"
+                <img src="/assets/carousel_1.png" class="w-full h-full object-cover opacity-30 blur-xs scale-105"
                     alt="Arena">
             </div>
 
@@ -118,7 +118,7 @@
 
                 <div class="flex flex-col items-center gap-8">
                     <div class="flex gap-4">
-                        <div v-for="i in 3" class="w-16 h-[2px] bg-white/10 rounded-full overflow-hidden">
+                        <div v-for="i in 3" class="w-16 h-0.5 bg-white/10 rounded-full overflow-hidden">
                             <div class="h-full bg-brand-yellow animate-line-load"></div>
                         </div>
                     </div>

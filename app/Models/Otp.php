@@ -8,6 +8,7 @@ class Otp extends Model
 {
     public $fillable = [
         'user_id',
-        'code'
+        'code',
+        'expires_at'
     ];
 }

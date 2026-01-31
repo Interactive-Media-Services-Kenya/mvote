@@ -324,7 +324,7 @@ const encodeName = (name) => encodeURIComponent(name);
                     </div>
                     <span
                         class="text-[9px] font-bold text-gray-500 uppercase tracking-widest"
-                        >{{ upcomingArtists?.length || 0 }} Roster Units</span
+                        >{{ upcomingArtists?.length || 0 }} artists</span
                     >
                 </div>
 
@@ -339,34 +339,6 @@ const encodeName = (name) => encodeURIComponent(name);
                                 : 'hover:border-brand-yellow/30'
                         "
                     >
-                        <div
-                            class="w-12 h-12 rounded-xl overflow-hidden border border-white/10 relative"
-                        >
-                            <img
-                                :src="
-                                    artist.photo ||
-                                    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeName(artist.name)}`
-                                "
-                                class="w-full h-full object-cover"
-                            />
-                            <div
-                                v-if="artist.status === 'closed'"
-                                class="absolute inset-0 bg-black/60 flex items-center justify-center"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5 text-green-500"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                            </div>
-                        </div>
                         <div class="flex-1">
                             <h4
                                 class="text-xs font-black uppercase italic tracking-tighter"

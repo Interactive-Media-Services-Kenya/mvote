@@ -26,10 +26,10 @@ class PerformanceController extends Controller
         Performance::where('event_id', $event->id)
             ->where('status', 'live')
             ->update(['status' => 'closed', 'end_time' => now()]);
-            
+
         // Reset previously live artists to closed
         Artist::where('status', 'live')->update(['status' => 'closed']);
-        
+
         $artist = Artist::findOrFail($request->artist_id);
         $artist->update(['status' => 'live']);
 
@@ -94,11 +94,8 @@ class PerformanceController extends Controller
 
     public function reset(Performance $performance)
     {
-        // Revert artist status to upcoming
         $performance->artist->update(['status' => 'upcoming']);
-        
-        // Remove the performance record or mark as cancelled
-        // If we want a "fresh chance", we probably want to delete votes too
+
         $performance->votes()->delete();
         $performance->delete();
 
