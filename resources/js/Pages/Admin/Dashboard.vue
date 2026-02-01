@@ -13,6 +13,36 @@ const liveArtist = computed(() => props.liveArtist);
 const stats = computed(() => props.stats);
 const upcomingArtists = computed(() => props.upcomingArtists);
 
+const activeTab = ref("upcoming"); // 'upcoming' or 'closed'
+
+const linedUpArtists = computed(() =>
+    props.upcomingArtists.filter((a) => a.status === "upcoming"),
+);
+const closedArtists = computed(() =>
+    props.upcomingArtists.filter((a) => a.status === "closed"),
+);
+
+const liveFansCount = ref(0);
+const liveJudgesCount = ref(0);
+
+const displayStats = computed(() => {
+    return props.stats.map((stat) => {
+        if (stat.label === "Active Fans") {
+            return {
+                ...stat,
+                value: liveFansCount.value || stat.value,
+            };
+        }
+        if (stat.label === "Active Judges") {
+            return {
+                ...stat,
+                value: liveJudgesCount.value || stat.value,
+            };
+        }
+        return stat;
+    });
+});
+
 // Timer Logic
 const timeRemaining = ref("00:00");
 const secondsLeft = ref(0);
@@ -58,6 +88,24 @@ onMounted(() => {
                 router.reload({ preserveScroll: true });
             },
         );
+
+        window.Echo.join("voters")
+            .here((users) => {
+                liveFansCount.value = users.filter(
+                    (u) => u.role === "fan",
+                ).length;
+                liveJudgesCount.value = users.filter(
+                    (u) => u.role === "judge",
+                ).length;
+            })
+            .joining((user) => {
+                if (user.role === "fan") liveFansCount.value++;
+                if (user.role === "judge") liveJudgesCount.value++;
+            })
+            .leaving((user) => {
+                if (user.role === "fan") liveFansCount.value--;
+                if (user.role === "judge") liveJudgesCount.value--;
+            });
     } else {
         console.error("Echo is not defined on window!");
     }
@@ -154,9 +202,11 @@ const encodeName = (name) => encodeURIComponent(name);
             </header>
 
             <!-- Stats Grid - Mobile First Single Column -->
-            <div class="grid grid-cols-1 gap-4 mb-6">
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+            >
                 <div
-                    v-for="stat in stats"
+                    v-for="stat in displayStats"
                     :key="stat.label"
                     class="glass-card p-4 rounded-2xl border-white/5 relative overflow-hidden group"
                 >
@@ -237,10 +287,37 @@ const encodeName = (name) => encodeURIComponent(name);
                             {{ liveArtist.name }}
                         </h4>
                         <p
-                            class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4"
+                            class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-3"
                         >
                             Transmission Active
                         </p>
+
+                        <div class="flex justify-center gap-2 mb-4">
+                            <div
+                                class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-xl"
+                            >
+                                <span
+                                    class="text-[10px] font-black italic text-green-500"
+                                    >{{ liveArtist.fan_voters }}</span
+                                >
+                                <span
+                                    class="text-[8px] font-bold uppercase text-gray-500"
+                                    >Fans</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-xl"
+                            >
+                                <span
+                                    class="text-[10px] font-black italic text-blue-500"
+                                    >{{ liveArtist.judge_voters }}</span
+                                >
+                                <span
+                                    class="text-[8px] font-bold uppercase text-gray-500"
+                                    >Judges</span
+                                >
+                            </div>
+                        </div>
 
                         <div class="flex flex-col gap-2 relative z-10">
                             <template v-if="liveArtist.voting_started_at">
@@ -326,35 +403,51 @@ const encodeName = (name) => encodeURIComponent(name);
                 </div>
             </section>
 
-            <!-- On Deck Section -->
+            <!-- On Deck / Finished Tabs -->
             <section class="mb-12">
-                <div class="flex items-center justify-between mb-4 px-1">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-1.5 h-1.5 bg-brand-yellow rounded-full"
-                        ></div>
-                        <h3
-                            class="text-sm font-black italic uppercase tracking-wider"
-                        >
-                            On Deck
-                        </h3>
-                    </div>
-                    <span
-                        class="text-[9px] font-bold text-gray-500 uppercase tracking-widest"
-                        >{{ upcomingArtists?.length || 0 }} artists</span
+                <div
+                    class="flex items-center gap-6 mb-6 border-b border-white/5 px-2"
+                >
+                    <button
+                        @click="activeTab = 'upcoming'"
+                        class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                        :class="
+                            activeTab === 'upcoming'
+                                ? 'text-brand-yellow'
+                                : 'text-gray-500 hover:text-white'
+                        "
                     >
+                        Lined Up
+                        <div
+                            v-if="activeTab === 'upcoming'"
+                            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow"
+                        ></div>
+                    </button>
+                    <button
+                        @click="activeTab = 'closed'"
+                        class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                        :class="
+                            activeTab === 'closed'
+                                ? 'text-brand-yellow'
+                                : 'text-gray-500 hover:text-white'
+                        "
+                    >
+                        Performed
+                        <div
+                            v-if="activeTab === 'closed'"
+                            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow"
+                        ></div>
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                    v-if="activeTab === 'upcoming'"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
                     <div
-                        v-for="artist in upcomingArtists"
+                        v-for="artist in linedUpArtists"
                         :key="artist.id"
-                        class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group"
-                        :class="
-                            artist.status === 'closed'
-                                ? 'opacity-60 grayscale'
-                                : 'hover:border-brand-yellow/30'
-                        "
+                        class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group hover:border-brand-yellow/30"
                     >
                         <div class="flex-1">
                             <h4
@@ -363,28 +456,66 @@ const encodeName = (name) => encodeURIComponent(name);
                                 {{ artist.name }}
                             </h4>
                             <p
-                                class="text-[8px] font-bold uppercase tracking-widest"
-                                :class="
-                                    artist.status === 'closed'
-                                        ? 'text-green-500/70'
-                                        : 'text-gray-500'
-                                "
+                                class="text-[8px] font-bold uppercase tracking-widest text-gray-500"
                             >
-                                {{
-                                    artist.status === "closed"
-                                        ? "Finished"
-                                        : "Awaiting Stage"
-                                }}
+                                Awaiting Stage
                             </p>
                         </div>
                         <button
-                            v-if="artist.status === 'upcoming'"
                             @click="goLive(artist.id)"
                             class="px-4 py-2 bg-brand-yellow text-black text-[9px] font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-all"
                         >
                             Live
                         </button>
-                        <div v-else class="flex gap-2">
+                    </div>
+                    <div
+                        v-if="linedUpArtists.length === 0"
+                        class="col-span-full py-12 text-center text-gray-600 font-bold uppercase text-[10px] tracking-widest border border-dashed border-white/5 rounded-3xl"
+                    >
+                        No more artists lined up
+                    </div>
+                </div>
+
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div
+                        v-for="artist in closedArtists"
+                        :key="artist.id"
+                        class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group opacity-80"
+                    >
+                        <div class="flex-1">
+                            <h4
+                                class="text-xs font-black uppercase italic tracking-tighter mb-2"
+                            >
+                                {{ artist.name }}
+                            </h4>
+                            <div class="flex gap-2">
+                                <div
+                                    class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                                >
+                                    <span
+                                        class="text-[8px] font-black italic text-green-500"
+                                        >{{ artist.fan_voters }}</span
+                                    >
+                                    <span
+                                        class="text-[7px] font-bold uppercase text-gray-500"
+                                        >Fans</span
+                                    >
+                                </div>
+                                <div
+                                    class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg"
+                                >
+                                    <span
+                                        class="text-[8px] font-black italic text-blue-500"
+                                        >{{ artist.judge_voters }}</span
+                                    >
+                                    <span
+                                        class="text-[7px] font-bold uppercase text-gray-500"
+                                        >Judges</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
                             <div
                                 class="px-3 py-1 bg-white/5 text-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5"
                             >
@@ -398,6 +529,12 @@ const encodeName = (name) => encodeURIComponent(name);
                                 Reset
                             </button>
                         </div>
+                    </div>
+                    <div
+                        v-if="closedArtists.length === 0"
+                        class="col-span-full py-12 text-center text-gray-600 font-bold uppercase text-[10px] tracking-widest border border-dashed border-white/5 rounded-3xl"
+                    >
+                        No history available yet
                     </div>
                 </div>
             </section>

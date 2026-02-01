@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { Head, Link, router } from "@inertiajs/vue3";
 import UserMenu from "../Components/UserMenu.vue";
 import VotingOverlay from "../Components/VotingOverlay.vue";
+
 const props = defineProps({
     artists: Array,
     event: Object,
@@ -11,6 +12,9 @@ const props = defineProps({
 const searchQuery = ref("");
 const showVoting = ref(false);
 const activeArtist = ref(null);
+const timeRemaining = ref("");
+const isTimerActive = ref(false);
+let timerInterval = null;
 
 const liveArtist = computed(() =>
     (props.artists || []).find((a) => a.status === "live"),
@@ -25,6 +29,14 @@ const filteredArtists = computed(() => {
     );
 });
 
+watch(
+    () => liveArtist.value,
+    () => {
+        calculateTimeLeft();
+    },
+    { deep: true },
+);
+
 const openVoting = (artist) => {
     activeArtist.value = artist;
     showVoting.value = true;
@@ -34,11 +46,6 @@ const formatVotes = (count) => {
     if (count >= 1000) return (count / 1000).toFixed(1) + "k";
     return count;
 };
-
-// Timer Logic for Floating Button
-const timeRemaining = ref("");
-const isTimerActive = ref(false);
-let timerInterval = null;
 
 const calculateTimeLeft = () => {
     if (!liveArtist.value || !liveArtist.value.voting_ends_at) {
@@ -65,8 +72,6 @@ const calculateTimeLeft = () => {
     timeRemaining.value = ` (${minutes}:${seconds.toString().padStart(2, "0")})`;
 };
 
-import { onMounted, onUnmounted, watch } from "vue";
-
 onMounted(() => {
     timerInterval = setInterval(calculateTimeLeft, 1000);
     calculateTimeLeft();
@@ -88,14 +93,6 @@ onUnmounted(() => {
         window.Echo.leaveChannel("performances");
     }
 });
-
-watch(
-    () => liveArtist.value,
-    () => {
-        calculateTimeLeft();
-    },
-    { deep: true },
-);
 </script>
 
 <template>

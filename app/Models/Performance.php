@@ -69,7 +69,7 @@ class Performance extends Model
                 return 0;
             }
             
-            $sumRatings = $userVotes->sum('rating');
+            $sumRatings = $userVotes->where('question.type', 'rating')->sum('rating');
             return $sumRatings / $totalQuestions;
         });
 

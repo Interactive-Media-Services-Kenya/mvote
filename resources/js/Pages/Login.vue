@@ -1,22 +1,9 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
 
 const step = ref("IDENTIFY");
 const showCookieConsent = ref(false);
-
-import { onMounted } from "vue";
-
-onMounted(() => {
-    if (!localStorage.getItem("cookie_consent")) {
-        showCookieConsent.value = true;
-    }
-});
-
-const acceptCookies = () => {
-    localStorage.setItem("cookie_consent", "accepted");
-    showCookieConsent.value = false;
-};
 
 const form = useForm({
     phone: "",
@@ -24,10 +11,17 @@ const form = useForm({
     otp: ["", "", "", "", ""],
 });
 
+const isOtpComplete = computed(() => form.otp.every((v) => v !== ""));
+
 const isValidKenyanPhone = (phone) => {
     const regex =
         /^(?:254|\+254|0)?(7|1)(?:(?:[0-9][0-9])|(?:0[0-8]))[0-9]{6}$/;
     return regex.test(phone.replace(/\s+/g, ""));
+};
+
+const acceptCookies = () => {
+    localStorage.setItem("cookie_consent", "accepted");
+    showCookieConsent.value = false;
 };
 
 const handleIdentify = () => {
@@ -67,8 +61,6 @@ const handleOtpInput = (index, event) => {
     }
 };
 
-const isOtpComplete = computed(() => form.otp.every((v) => v !== ""));
-
 const handleVerify = () => {
     form.clearErrors("otp");
     if (!isOtpComplete.value) return;
@@ -79,6 +71,12 @@ const handleVerify = () => {
         },
     });
 };
+
+onMounted(() => {
+    if (!localStorage.getItem("cookie_consent")) {
+        showCookieConsent.value = true;
+    }
+});
 </script>
 
 <template>

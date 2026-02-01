@@ -24,12 +24,30 @@ class DashboardController extends Controller
             ->orderByRaw("status = 'upcoming' DESC")
             ->get()
             ->map(function($artist) {
+                $performance = $artist->performances->first();
+                $fanVoters = 0;
+                $judgeVoters = 0;
+
+                if ($performance) {
+                    $fanVoters = Vote::where('performance_id', $performance->id)
+                        ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
+                        ->distinct('user_id')
+                        ->count('user_id');
+                    
+                    $judgeVoters = Vote::where('performance_id', $performance->id)
+                        ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
+                        ->distinct('user_id')
+                        ->count('user_id');
+                }
+
                 return [
                     'id' => $artist->id,
                     'name' => $artist->name,
                     'status' => $artist->status,
                     'photo' => $artist->photo,
-                    'performance_id' => $artist->performances->first()?->id,
+                    'performance_id' => $performance?->id,
+                    'fan_voters' => $fanVoters,
+                    'judge_voters' => $judgeVoters,
                 ];
             });
 
@@ -43,23 +61,45 @@ class DashboardController extends Controller
             'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $activePerformance->is_voting_paused,
+            'fan_voters' => Vote::where('performance_id', $activePerformance->id)
+                ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
+                ->distinct('user_id')
+                ->count('user_id'),
+            'judge_voters' => Vote::where('performance_id', $activePerformance->id)
+                ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
+                ->distinct('user_id')
+                ->count('user_id'),
         ] : null;
 
         // Fetch some basic stats
         $stats = [
             [
-                'label' => 'Total Votes Cast',
-                'value' => number_format(Vote::count()),
+                'label' => 'Total Voters',
+                'value' => number_format(Vote::distinct('user_id')->count('user_id')),
                 'trend' => '+0%', 
                 'color' => 'text-brand-yellow',
             ],
             [
                 'label' => 'Active Fans',
                 'value' => number_format(\Illuminate\Support\Facades\DB::table('sessions')
+                    ->join('users', 'sessions.user_id', '=', 'users.id')
+                    ->join('roles', 'users.role_id', '=', 'roles.id')
+                    ->where('roles.name', 'fan')
                     ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
                     ->count()), 
                 'trend' => 'Live',
                 'color' => 'text-green-500',
+            ],
+            [
+                'label' => 'Active Judges',
+                'value' => number_format(\Illuminate\Support\Facades\DB::table('sessions')
+                    ->join('users', 'sessions.user_id', '=', 'users.id')
+                    ->join('roles', 'users.role_id', '=', 'roles.id')
+                    ->where('roles.name', 'judge')
+                    ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
+                    ->count()), 
+                'trend' => 'Real-time',
+                'color' => 'text-blue-500',
             ],
             [
                 'label' => 'Avg Rating',

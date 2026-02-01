@@ -24,8 +24,12 @@ class LineupController extends Controller
         $event = Event::where('is_active', true)->latest()->first();
         if ($event) {
             $event->load([
-                'questions' => function ($query) use ($target) {
-                    $query->whereIn('target', [$target, 'both'])->orderBy('order');
+                'questions' => function ($query) use ($target, $role) {
+                    $query->whereIn('target', [$target, 'both']);
+                    if ($role === 'fan') {
+                        $query->where('type', 'rating');
+                    }
+                    $query->orderBy('order');
                 }
             ]);
         }
@@ -85,8 +89,12 @@ class LineupController extends Controller
         $event = Event::where('is_active', true)->latest()->first();
         if ($event) {
             $event->load([
-                'questions' => function ($query) use ($target) {
-                    $query->whereIn('target', [$target, 'both'])->orderBy('order');
+                'questions' => function ($query) use ($target, $role) {
+                    $query->whereIn('target', [$target, 'both']);
+                    if ($role === 'fan') {
+                        $query->where('type', 'rating');
+                    }
+                    $query->orderBy('order');
                 }
             ]);
         }

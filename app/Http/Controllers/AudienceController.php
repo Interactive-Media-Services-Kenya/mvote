@@ -57,12 +57,15 @@ class AudienceController extends Controller
         // Note: This requires the session driver to be 'database' or 'redis' and session table to be configured.
         // Assuming database driver as per implementation plan.
         $activeFans = DB::table('sessions')
+            ->join('users', 'sessions.user_id', '=', 'users.id')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->where('roles.name', 'fan')
             ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
             ->count();
 
         return [
             'activeFans' => $activeFans,
-            'totalVotes' => Vote::count(),
+            'totalVotes' => Vote::distinct('user_id')->count('user_id'),
         ];
     }
 }
