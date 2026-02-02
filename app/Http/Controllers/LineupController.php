@@ -6,13 +6,15 @@ use App\Models\Artist;
 use App\Models\Event;
 use App\Models\Performance;
 use App\Models\Vote;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class LineupController extends Controller
 {
-    public function index()
+    public function index(): RedirectResponse|Response
     {
         $user = Auth::user();
         if (!$user)
@@ -77,7 +79,7 @@ class LineupController extends Controller
         ]);
     }
 
-    public function artist($id)
+    public function artist($id): RedirectResponse|Response
     {
         $user = Auth::user();
         if (!$user)

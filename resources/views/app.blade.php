@@ -8,7 +8,7 @@
     </head>
 
     <body class="bg-[#010101] font-sans antialiased">
-        <div class="max-w-110 mx-auto min-h-screen relative bg-brand-black shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+        <div class="{{ $page['component'] === 'AudienceDisplay' ? '' : 'max-w-110 mx-auto' }} min-h-screen relative bg-brand-black shadow-[0_0_100px_rgba(0,0,0,0.8)]">
             @inertia
         </div>
     </body>

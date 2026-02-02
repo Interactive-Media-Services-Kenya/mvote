@@ -42,6 +42,14 @@ class AudienceController extends Controller
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
                 'is_voting_paused' => $activePerformance->is_voting_paused,
+                'fan_votes' => Vote::where('performance_id', $activePerformance->id)
+                    ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
+                    ->distinct('user_id')
+                    ->count('user_id'),
+                'judge_votes' => Vote::where('performance_id', $activePerformance->id)
+                    ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
+                    ->distinct('user_id')
+                    ->count('user_id'),
             ];
         }
 

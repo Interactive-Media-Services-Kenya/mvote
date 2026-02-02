@@ -10,13 +10,9 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\VoteController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
-    Route::get('/coming-soon', function () {
-        return Inertia::render('Maintenance');
-    })->name('maintenance');
     Route::post('/login/identify', [LoginController::class, 'identify']);
     Route::post('/login/verify', [LoginController::class, 'verify']);
 });

@@ -202,9 +202,7 @@ const encodeName = (name) => encodeURIComponent(name);
             </header>
 
             <!-- Stats Grid - Mobile First Single Column -->
-            <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-            >
+            <div class="grid grid-cols-2 gap-4 mb-6">
                 <div
                     v-for="stat in displayStats"
                     :key="stat.label"
@@ -442,7 +440,7 @@ const encodeName = (name) => encodeURIComponent(name);
 
                 <div
                     v-if="activeTab === 'upcoming'"
-                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    class="grid grid-cols-1 gap-4"
                 >
                     <div
                         v-for="artist in linedUpArtists"
@@ -476,7 +474,7 @@ const encodeName = (name) => encodeURIComponent(name);
                     </div>
                 </div>
 
-                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div v-else class="grid grid-cols-1 gap-4">
                     <div
                         v-for="artist in closedArtists"
                         :key="artist.id"

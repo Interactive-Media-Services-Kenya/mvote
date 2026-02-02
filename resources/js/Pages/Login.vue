@@ -91,6 +91,7 @@ onMounted(() => {
                 class="absolute inset-0 bg-brand-black/60 z-10 backdrop-blur-[2px]"
             ></div>
             <img
+                :src="'/assets/carousel_1.png'"
                 class="w-full h-full object-cover animate-ken-burns"
                 alt="Background"
             />
