@@ -53,6 +53,7 @@ class Performance extends Model
             ->where('type', 'rating')
             ->whereIn('target', ['fan', 'both'])
             ->count();
+
         $totalJudgeQuestions = $event->questions()
             ->where('type', 'rating')
             ->whereIn('target', ['judge', 'both'])
@@ -62,17 +63,17 @@ class Performance extends Model
             $user = $userVotes->first()->user;
             $role = $user->role->name ?? 'fan';
             $target = $role === 'judge' ? 'judge' : 'fan';
-            
+
             $totalQuestions = ($target === 'judge') ? $totalJudgeQuestions : $totalFanQuestions;
-            
+
             if ($totalQuestions == 0) {
                 return 0;
             }
-            
+
             $sumRatings = $userVotes->where('question.type', 'rating')->sum('rating');
             return $sumRatings / $totalQuestions;
         });
 
-        return $voterScores->average();
+        return $totalFanQuestions;
     }
 }

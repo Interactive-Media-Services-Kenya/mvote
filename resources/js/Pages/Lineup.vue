@@ -112,7 +112,9 @@ onUnmounted(() => {
 
         <div class="px-6 pt-8 animate-fade-up">
             <header class="mb-8">
-                <h2 class="text-4xl font-extrabold tracking-tight">Lineup</h2>
+                <h2 class="text-4xl font-extrabold tracking-tight">
+                    Artist Lineup
+                </h2>
                 <p class="text-gray-400 font-medium">
                     Tonight's performing artists
                 </p>
