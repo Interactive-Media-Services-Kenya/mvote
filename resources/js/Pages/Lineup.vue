@@ -78,12 +78,13 @@ onMounted(() => {
 
     // Listen for real-time updates
     if (window.Echo) {
-        window.Echo.channel("performances").listen(
-            ".performance.updated",
-            (e) => {
+        window.Echo.channel("performances")
+            .listen(".performance.updated", (e) => {
                 router.reload({ preserveScroll: true });
-            },
-        );
+            })
+            .listen(".lineup.updated", (e) => {
+                router.reload({ preserveScroll: true });
+            });
     }
 });
 
@@ -225,11 +226,18 @@ onUnmounted(() => {
                     <h3 class="font-bold text-lg leading-tight truncate px-1">
                         {{ artist.name }}
                     </h3>
-                    <p
-                        class="text-brand-yellow text-[10px] font-black uppercase tracking-widest mt-0.5 px-1"
-                    >
-                        {{ artist.genre }}
-                    </p>
+                    <div class="flex items-center justify-between mt-0.5 px-1">
+                        <p
+                            class="text-brand-yellow text-[10px] font-black uppercase tracking-widest"
+                        >
+                            {{ artist.genre }}
+                        </p>
+                        <p
+                            class="text-gray-500 text-[10px] font-black uppercase tracking-widest italic"
+                        >
+                            {{ artist.scheduled_time }}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

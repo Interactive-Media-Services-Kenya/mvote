@@ -25,6 +25,9 @@ class EventController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'start_time' => 'nullable|date',
+            'performance_duration' => 'required|integer|min:1',
+            'break_duration' => 'required|integer|min:0',
             'is_active' => 'boolean',
             'questions' => 'array',
             'questions.*.id' => 'nullable|integer',
@@ -39,6 +42,9 @@ class EventController extends Controller
         $eventData = [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
+            'start_time' => $validated['start_time'],
+            'performance_duration' => $validated['performance_duration'],
+            'break_duration' => $validated['break_duration'],
             'is_active' => $request->has('is_active') ? $validated['is_active'] : true,
             'company_id' => 1,
         ];
@@ -74,6 +80,8 @@ class EventController extends Controller
 
         // Questions not in the payload should be removed if they are already in the DB
         $event->questions()->whereNotIn('id', $syncedIds)->delete();
+
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
 
         return back()->with('success', 'Event configuration updated successfully.');
     }

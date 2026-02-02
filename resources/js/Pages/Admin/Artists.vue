@@ -68,6 +68,28 @@ const deleteArtist = (artist) => {
         form.delete(`/admin/artists/${artist.id}`);
     }
 };
+
+const moveArtist = (index, direction) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= artists.length) return;
+
+    const list = [...artists];
+    const item = list.splice(index, 1)[0];
+    list.splice(newIndex, 0, item);
+
+    // Immediate local update for snappy feel
+    artists.splice(0, artists.length, ...list);
+
+    router.post(
+        "/admin/artists/reorder",
+        {
+            artists: list.map((a) => a.id),
+        },
+        {
+            preserveScroll: true,
+        },
+    );
+};
 </script>
 
 <template>
@@ -113,7 +135,7 @@ const deleteArtist = (artist) => {
             <!-- Unified List Aesthetic -->
             <div class="space-y-4">
                 <div
-                    v-for="artist in artists"
+                    v-for="(artist, index) in artists"
                     :key="artist.id"
                     class="glass-card p-3 rounded-3xl border-white/5 flex items-center gap-4 group active:scale-[0.99] transition-all relative overflow-hidden"
                 >
@@ -141,6 +163,13 @@ const deleteArtist = (artist) => {
                                 class="w-1 h-1 rounded-full bg-gray-700"
                             ></span>
                             <span
+                                class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
+                                >{{ artist.scheduled_time }}</span
+                            >
+                            <span
+                                class="w-1 h-1 rounded-full bg-gray-700"
+                            ></span>
+                            <span
                                 class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
                                 >{{ artist.status }}</span
                             >
@@ -148,6 +177,49 @@ const deleteArtist = (artist) => {
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <!-- Reorder Controls -->
+                        <div class="flex flex-col gap-1 mr-2">
+                            <button
+                                @click="moveArtist(index, -1)"
+                                :disabled="index === 0"
+                                class="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-all"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-3 w-3"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="3"
+                                        d="M5 15l7-7 7 7"
+                                    />
+                                </svg>
+                            </button>
+                            <button
+                                @click="moveArtist(index, 1)"
+                                :disabled="index === artists.length - 1"
+                                class="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-all"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-3 w-3"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="3"
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
                         <div
                             v-if="artist.status === 'live'"
                             class="w-2 h-2 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]"

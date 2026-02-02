@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/artists', [ArtistController::class, 'index']);
         Route::post('/artists', [ArtistController::class, 'store']);
+        Route::post('/artists/reorder', [ArtistController::class, 'reorder']);
         Route::post('/artists/{artist}', [ArtistController::class, 'update']);
         Route::delete('/artists/{artist}', [ArtistController::class, 'destroy']);
         Route::get('/event', [EventController::class, 'index']);

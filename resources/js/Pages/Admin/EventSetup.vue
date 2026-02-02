@@ -13,6 +13,11 @@ const form = useForm({
     name: props.event?.name || "",
     description: props.event?.description || "",
     is_active: props.event?.is_active ?? true,
+    start_time: props.event?.start_time
+        ? new Date(props.event.start_time).toISOString().slice(0, 16)
+        : "",
+    performance_duration: props.event?.performance_duration ?? 5,
+    break_duration: props.event?.break_duration ?? 2,
     questions: props.event?.questions || [],
 });
 
@@ -172,6 +177,51 @@ const submitEvent = () => {
                                 {{ form.errors.description }}
                             </p>
                         </div>
+
+                        <!-- Scheduling Config -->
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1"
+                                    >Event Kick-off Time</label
+                                >
+                                <input
+                                    v-model="form.start_time"
+                                    type="datetime-local"
+                                    class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white"
+                                    :class="{
+                                        'border-red-500/50':
+                                            form.errors.start_time,
+                                    }"
+                                />
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1"
+                                        >Perf. Duration (Mins)</label
+                                    >
+                                    <input
+                                        v-model="form.performance_duration"
+                                        type="number"
+                                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white"
+                                    />
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1"
+                                        >Setup Break (Mins)</label
+                                    >
+                                    <input
+                                        v-model="form.break_duration"
+                                        type="number"
+                                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-brand-yellow transition-all font-bold text-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-between px-1">
                             <span
                                 class="text-[9px] font-black uppercase text-gray-500 tracking-widest"

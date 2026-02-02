@@ -19,13 +19,15 @@ class ArtistController extends Controller
                 'genre' => $artist->genre->title ?? 'Unknown',
                 'bio' => $artist->bio,
                 'image' => $artist->photo ?? 'https://via.placeholder.com/150',
-                'status' => $artist->is_active ? 'onboarded' : 'inactive',
+                'status' => $artist->status,
+                'lineup_order' => $artist->lineup_order,
+                'scheduled_time' => $artist->scheduled_time ? $artist->scheduled_time->format('H:i') : '--:--',
             ];
         });
 
         return Inertia::render('Admin/Artists', [
             'genres' => $genres,
-            'artists' => $artists
+            'artists' => $artists->sortBy('lineup_order')->values()
         ]);
     }
 
@@ -86,5 +88,22 @@ class ArtistController extends Controller
         $artist->delete();
 
         return redirect()->back();
+    }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'artists' => 'required|array',
+            'artists.*' => 'required|integer|exists:artists,id',
+        ]);
+
+        foreach ($validated['artists'] as $index => $id) {
+            Artist::where('id', $id)->update(['lineup_order' => $index]);
+        }
+
+        // Broadcast event for real-time updates
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
+        return back()->with('success', 'Lineup reordered successfully.');
     }
 }

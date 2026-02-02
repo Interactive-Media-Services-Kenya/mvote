@@ -40,7 +40,7 @@ class LineupController extends Controller
             ->where('event_id', $event->id)
             ->first();
 
-        $artists = Artist::with('genre')->where('is_active', true)->get()->map(function ($artist) use ($activePerformance, $user) {
+        $artists = Artist::with('genre')->where('is_active', true)->orderBy('lineup_order')->get()->map(function ($artist) use ($activePerformance, $user) {
             $isLive = $activePerformance && $activePerformance->artist_id === $artist->id;
 
             $hasVoted = false;
@@ -56,6 +56,7 @@ class LineupController extends Controller
                 'genre' => $artist->genre->title ?? 'Unknown',
                 'image' => $artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artist->name),
                 'status' => $isLive ? 'live' : $artist->status,
+                'scheduled_time' => $artist->scheduled_time ? $artist->scheduled_time->format('H:i') : '--:--',
                 'voteCount' => 0,
                 'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
@@ -121,7 +122,7 @@ class LineupController extends Controller
             'image' => $artistModel->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artistModel->name),
             'bio' => $artistModel->bio,
             'status' => $isLive ? 'live' : $artistModel->status,
-            'scheduledTime' => '21:00', // Placeholder
+            'scheduledTime' => $artistModel->scheduled_time ? $artistModel->scheduled_time->format('H:i') : '--:--',
             'discography' => [],
             'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,

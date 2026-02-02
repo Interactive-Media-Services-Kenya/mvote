@@ -50,12 +50,13 @@ onMounted(() => {
 
     // Listen for real-time updates
     if (window.Echo) {
-        window.Echo.channel("performances").listen(
-            ".performance.updated",
-            (e) => {
+        window.Echo.channel("performances")
+            .listen(".performance.updated", (e) => {
                 refreshData();
-            },
-        );
+            })
+            .listen(".lineup.updated", (e) => {
+                refreshData();
+            });
 
         window.Echo.join("voters")
             .here((users) => {

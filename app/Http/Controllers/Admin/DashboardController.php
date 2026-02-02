@@ -21,7 +21,7 @@ class DashboardController extends Controller
             }])
             ->where('is_active', true)
             ->where('status', '!=', 'live')
-            ->orderByRaw("status = 'upcoming' DESC")
+            ->orderBy('lineup_order')
             ->get()
             ->map(function($artist) {
                 $performance = $artist->performances->first();

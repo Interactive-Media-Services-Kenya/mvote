@@ -10,7 +10,15 @@ class Event extends Model
         'company_id',
         'name',
         'description',
+        'start_time',
+        'performance_duration',
+        'break_duration',
         'is_active'
+    ];
+
+    protected $casts = [
+        'start_time' => 'datetime',
+        'is_active' => 'boolean'
     ];
 
     public function questions()

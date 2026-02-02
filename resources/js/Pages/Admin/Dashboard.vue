@@ -80,14 +80,15 @@ onMounted(() => {
     console.log("Echo listener starting..."); // Step 1: Check if this runs
 
     if (window.Echo) {
-        window.Echo.channel("performances").listen(
-            ".performance.updated",
-            (e) => {
+        window.Echo.channel("performances")
+            .listen(".performance.updated", (e) => {
                 // Step 2: The DOT is critical
                 console.log("EVENT RECEIVED!", e);
                 router.reload({ preserveScroll: true });
-            },
-        );
+            })
+            .listen(".lineup.updated", (e) => {
+                router.reload({ preserveScroll: true });
+            });
 
         window.Echo.join("voters")
             .here((users) => {
