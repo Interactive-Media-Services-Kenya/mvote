@@ -19,7 +19,13 @@ const linedUpArtists = computed(() =>
     props.upcomingArtists.filter((a) => a.status === "upcoming"),
 );
 const closedArtists = computed(() =>
-    props.upcomingArtists.filter((a) => a.status === "closed"),
+    props.upcomingArtists
+        .filter((a) => a.status === "closed")
+        .sort(
+            (a, b) =>
+                (parseFloat(b.final_score) || 0) -
+                (parseFloat(a.final_score) || 0),
+        ),
 );
 
 const liveFansCount = ref(0);
@@ -292,27 +298,28 @@ const encodeName = (name) => encodeURIComponent(name);
 
                         <div class="flex justify-center gap-2 mb-4">
                             <div
-                                class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-xl"
+                                class="flex items-center gap-1.5 bg-brand-yellow/10 border border-brand-yellow/20 px-2.5 py-1 rounded-xl"
                             >
                                 <span
-                                    class="text-[10px] font-black italic text-green-500"
-                                    >{{ liveArtist.fan_voters }}</span
+                                    class="text-[10px] font-black italic text-brand-yellow"
+                                    >{{ liveArtist.final_score }} /
+                                    {{ liveArtist.avg_max }}</span
                                 >
                                 <span
                                     class="text-[8px] font-bold uppercase text-gray-500"
-                                    >Audience</span
+                                    >Overall Score</span
                                 >
                             </div>
                             <div
-                                class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-xl"
+                                class="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl"
                             >
                                 <span
-                                    class="text-[10px] font-black italic text-blue-500"
-                                    >{{ liveArtist.judge_voters }}</span
+                                    class="text-[10px] font-black italic text-white"
+                                    >{{ liveArtist.vote_count }}</span
                                 >
                                 <span
                                     class="text-[8px] font-bold uppercase text-gray-500"
-                                    >Judges</span
+                                    >Waitings</span
                                 >
                             </div>
                         </div>
@@ -489,48 +496,33 @@ const encodeName = (name) => encodeURIComponent(name);
                                 </h4>
                                 <div class="flex gap-2">
                                     <div
-                                        class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                                        class="flex items-center gap-1.5 bg-brand-yellow/10 border border-brand-yellow/20 px-2 py-0.5 rounded-lg"
                                     >
                                         <span
-                                            class="text-[8px] font-black italic text-green-500"
-                                            >{{ artist.fan_voters }}</span
+                                            class="text-[8px] font-black italic text-brand-yellow"
+                                            >{{ artist.final_score }} /
+                                            {{ artist.avg_max }}</span
                                         >
                                         <span
                                             class="text-[7px] font-bold uppercase text-gray-500"
-                                            >Audience</span
+                                            >Final Score</span
                                         >
                                     </div>
                                     <div
-                                        class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg"
+                                        class="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg"
                                     >
                                         <span
-                                            class="text-[8px] font-black italic text-blue-500"
-                                            >{{ artist.judge_voters }}</span
+                                            class="text-[8px] font-black italic text-white"
+                                            >{{ artist.vote_count }}</span
                                         >
                                         <span
                                             class="text-[7px] font-bold uppercase text-gray-500"
-                                            >Judges</span
+                                            >Votes</span
                                         >
                                     </div>
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button
-                                    v-if="
-                                        artist.voter_logs &&
-                                        artist.voter_logs.length > 0
-                                    "
-                                    @click="
-                                        artist.showVoters = !artist.showVoters
-                                    "
-                                    class="px-3 py-1 bg-brand-yellow/10 text-brand-yellow text-[8px] font-black uppercase tracking-widest rounded-lg border border-brand-yellow/20 hover:bg-brand-yellow/20 transition-all"
-                                >
-                                    {{
-                                        artist.showVoters
-                                            ? "Hide Logs"
-                                            : "View Logs"
-                                    }}
-                                </button>
                                 <div
                                     class="px-3 py-1 bg-white/5 text-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5"
                                 >
@@ -547,73 +539,6 @@ const encodeName = (name) => encodeURIComponent(name);
                                 </button>
                             </div>
                         </div>
-
-                        <Transition name="fade-down">
-                            <div
-                                v-if="artist.showVoters"
-                                class="px-4 pb-4 -mt-2"
-                            >
-                                <div
-                                    class="bg-black/40 rounded-2xl border border-white/5 overflow-hidden"
-                                >
-                                    <table class="w-full text-left text-[8px]">
-                                        <thead>
-                                            <tr
-                                                class="border-b border-white/5 bg-white/5"
-                                            >
-                                                <th
-                                                    class="px-3 py-2 font-black uppercase text-gray-500"
-                                                >
-                                                    Voter
-                                                </th>
-                                                <th
-                                                    class="px-3 py-2 font-black uppercase text-gray-500"
-                                                >
-                                                    Role
-                                                </th>
-                                                <th
-                                                    class="px-3 py-2 font-black uppercase text-gray-500 text-right"
-                                                >
-                                                    Points
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-white/5">
-                                            <tr
-                                                v-for="log in artist.voter_logs"
-                                                :key="log.nickname"
-                                            >
-                                                <td
-                                                    class="px-3 py-2 font-bold text-white"
-                                                >
-                                                    {{ log.nickname }}
-                                                </td>
-                                                <td class="px-3 py-2">
-                                                    <span
-                                                        :class="[
-                                                            'px-1.5 py-0.5 rounded-md uppercase font-black tracking-tighter',
-                                                            log.role === 'judge'
-                                                                ? 'bg-blue-500/10 text-blue-500'
-                                                                : 'bg-green-500/10 text-green-500',
-                                                        ]"
-                                                    >
-                                                        {{ log.role }}
-                                                    </span>
-                                                </td>
-                                                <td
-                                                    class="px-3 py-2 text-right font-black italic text-brand-yellow"
-                                                >
-                                                    {{ log.points }}
-                                                    <span class="text-white/20"
-                                                        >/ {{ log.max }}</span
-                                                    >
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </Transition>
                     </div>
 
                     <div

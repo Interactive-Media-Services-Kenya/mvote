@@ -146,6 +146,24 @@ const progressWidth = computed(() => {
         ? `${((currentQuestionIndex.value + 1) / total) * 100}%`
         : "0%";
 });
+
+const localVoterRating = computed(() => {
+    let points = 0;
+    const ratingQuestions = props.questions.filter(
+        (q) => q.type === "rating" || q.type === "rate",
+    );
+
+    ratingQuestions.forEach((q) => {
+        const val = answers.value[q.id];
+        if (val) {
+            points += parseInt(val);
+        }
+    });
+
+    const max = ratingQuestions.length * 5;
+
+    return { points, max };
+});
 </script>
 
 <template>
@@ -373,13 +391,15 @@ const progressWidth = computed(() => {
                                             class="text-2xl font-black italic text-brand-yellow"
                                         >
                                             {{
-                                                artist.voterRating?.points || 0
+                                                artist.voterRating?.points ||
+                                                localVoterRating.points
                                             }}
                                             <span
                                                 class="text-white/40 not-italic text-sm"
                                                 >/
                                                 {{
-                                                    artist.voterRating?.max || 0
+                                                    artist.voterRating?.max ||
+                                                    localVoterRating.max
                                                 }}</span
                                             >
                                         </p>

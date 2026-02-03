@@ -25,35 +25,13 @@ class DashboardController extends Controller
             ->get()
             ->map(function($artist) {
                 $performance = $artist->performances->first();
-                $voterLogs = [];
-                $fanVoters = 0;
-                $judgeVoters = 0;
-                if ($performance) {
-                    $fanVoters = Vote::where('performance_id', $performance->id)
-                        ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
-                        ->distinct('user_id')
-                        ->count('user_id');
-                    
-                    $judgeVoters = Vote::where('performance_id', $performance->id)
-                        ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
-                        ->distinct('user_id')
-                        ->count('user_id');
+                $totalPoints = 0;
+                $totalPossiblePoints = 0;
+                $voteCount = 0;
 
-                    if ($artist->status === 'closed') {
-                        $voterLogs = Vote::where('performance_id', $performance->id)
-                            ->with('user')
-                            ->get()
-                            ->groupBy('user_id')
-                            ->map(function($userVotes) use ($performance) {
-                                $user = $userVotes->first()->user;
-                                return [
-                                    'nickname' => $user->nick_name ?? 'Anonymous',
-                                    'role' => $user->role->name ?? 'fan',
-                                    'points' => $performance->userRatedPoints($user),
-                                    'max' => $performance->maxPossiblePoints($user)
-                                ];
-                            })->values();
-                    }
+                if ($performance) {
+                    $voteCount = Vote::where('performance_id', $performance->id)->distinct('user_id')->count('user_id');
+                    $finalScore = $performance->getParticipationWeightedScore();
                 }
 
                 return [
@@ -62,11 +40,13 @@ class DashboardController extends Controller
                     'status' => $artist->status,
                     'photo' => $artist->photo,
                     'performance_id' => $performance?->id,
-                    'fan_voters' => $fanVoters,
-                    'judge_voters' => $judgeVoters,
-                    'voter_logs' => $voterLogs,
+                    'vote_count' => $voteCount,
+                    'final_score' => number_format($finalScore ?? 0, 1),
+                    'avg_max' => number_format($performance ? $performance->getEventMaxPoints() : 75, 1),
                 ];
             });
+
+        $totalEventVoters = Vote::distinct('user_id')->count('user_id');
 
         // Map live artist data for frontend
         $mappedLiveArtist = $activePerformance ? [
@@ -78,14 +58,9 @@ class DashboardController extends Controller
             'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $activePerformance->is_voting_paused,
-            'fan_voters' => Vote::where('performance_id', $activePerformance->id)
-                ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
-                ->distinct('user_id')
-                ->count('user_id'),
-            'judge_voters' => Vote::where('performance_id', $activePerformance->id)
-                ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
-                ->distinct('user_id')
-                ->count('user_id'),
+            'final_score' => number_format($activePerformance ? $activePerformance->getParticipationWeightedScore() : 0, 1),
+            'avg_max' => number_format($activePerformance ? $activePerformance->getEventMaxPoints() : 75, 1),
+            'vote_count' => Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id'),
         ] : null;
 
         // Fetch some basic stats

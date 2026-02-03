@@ -27,34 +27,45 @@ class AudienceController extends Controller
             ->where('status', 'live')
             ->first();
 
-        $performanceData = null;
+        $performanceDataArray = null;
         if ($activePerformance) {
+            $performanceData = $activePerformance->getGlobalRatingData();
             $voteCount = Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id');
-            $avgRating = $activePerformance->average_score;
-
-            $performanceData = [
+            
+            $performanceDataArray = [
                 'id' => $activePerformance->id,
                 'artist_name' => $activePerformance->artist->name,
                 'artist_image' => $activePerformance->artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($activePerformance->artist->name),
                 'genre' => $activePerformance->artist->genre->title ?? 'Unknown',
                 'voteCount' => $voteCount,
-                'avgRating' => number_format($avgRating, 1),
+                'avgRating' => number_format($activePerformance->average_score, 1),
+                'finalScore' => number_format($activePerformance->getParticipationWeightedScore(), 1),
+                'avgMax' => number_format($activePerformance->getEventMaxPoints(), 1),
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
                 'is_voting_paused' => $activePerformance->is_voting_paused,
-                'fan_votes' => Vote::where('performance_id', $activePerformance->id)
-                    ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
-                    ->distinct('user_id')
-                    ->count('user_id'),
-                'judge_votes' => Vote::where('performance_id', $activePerformance->id)
-                    ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
-                    ->distinct('user_id')
-                    ->count('user_id'),
             ];
         }
 
+        $leaderboard = Performance::with('artist')
+            ->where('event_id', $event->id)
+            ->whereIn('status', ['closed', 'live'])
+            ->get()
+            ->map(function($performance) {
+                return [
+                    'id' => $performance->artist_id,
+                    'name' => $performance->artist->name,
+                    'score' => $performance->getParticipationWeightedScore(),
+                    'image' => $performance->artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($performance->artist->name),
+                ];
+            })
+            ->sortByDesc('score')
+            ->values();
+
         return Inertia::render('AudienceDisplay', [
-            'activePerformance' => $performanceData,
+            'event' => $event,
+            'activePerformance' => $performanceDataArray,
+            'leaderboard' => $leaderboard,
             'stats' => $this->getStats()
         ]);
     }

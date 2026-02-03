@@ -111,4 +111,36 @@ class Performance extends Model
         $data = $this->getGlobalRatingData();
         return $data['average_points'];
     }
+
+    /**
+     * The refined formula: (total artist points / total event participants) * total possible score for the event
+     * Where "total votes cast" = Total unique voters in the entire event.
+     */
+    public function getParticipationWeightedScore()
+    {
+        $totalArtistPoints = $this->votes()
+            ->whereHas('question', fn($q) => $q->where('type', 'rating'))
+            ->sum('rating');
+
+        $totalEventVoters = Vote::distinct('user_id')->count('user_id');
+        
+        // Total possible points is the number of questions * 5
+        $eventMax = $this->getEventMaxPoints();
+
+        if ($totalEventVoters === 0) return 0;
+
+        // The formula for participation weighted score is:
+        // (Sum of all ratings for artist) / (Total unique voters across entire event)
+        // This naturally yields a score between 0 and $eventMax.
+        $score = $totalArtistPoints / $totalEventVoters;
+        
+        return round($score, 1);
+    }
+
+    public function getEventMaxPoints()
+    {
+        return $this->event->questions()
+            ->where('type', 'rating')
+            ->count() * 5;
+    }
 }

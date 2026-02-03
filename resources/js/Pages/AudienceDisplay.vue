@@ -3,7 +3,12 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, router } from "@inertiajs/vue3";
 
 const props = defineProps({
+    event: Object,
     activePerformance: Object,
+    leaderboard: {
+        type: Array,
+        default: () => [],
+    },
     stats: Object,
 });
 
@@ -40,7 +45,7 @@ const calculateTimeLeft = () => {
 const refreshData = () => {
     router.reload({
         preserveScroll: true,
-        only: ["activePerformance", "stats"],
+        only: ["activePerformance", "stats", "leaderboard"],
     });
 };
 
@@ -154,6 +159,62 @@ onUnmounted(() => {
                         class="absolute inset-0 bg-linear-to-r from-black/80 via-black/20 to-transparent"
                     ></div>
 
+                    <!-- Leaderboard Overlay -->
+                    <div
+                        class="absolute top-12 right-12 w-64 glass-card rounded-3xl border border-white/10 overflow-hidden shadow-2xl animate-fade-in-left"
+                    >
+                        <div
+                            class="bg-brand-yellow/10 px-4 py-3 border-b border-white/5 flex items-center justify-between"
+                        >
+                            <span
+                                class="text-[10px] font-black uppercase tracking-widest text-brand-yellow"
+                                >Leaderboard</span
+                            >
+                            <span
+                                class="flex h-1.5 w-1.5 rounded-full bg-brand-yellow animate-pulse"
+                            ></span>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <TransitionGroup name="list">
+                                <div
+                                    v-for="(stat, index) in leaderboard"
+                                    :key="stat.id"
+                                    class="flex items-center gap-3 p-2 rounded-xl transition-all duration-500"
+                                    :class="
+                                        stat.id === activePerformance.id
+                                            ? 'bg-brand-yellow/20 border border-brand-yellow/20'
+                                            : 'hover:bg-white/5'
+                                    "
+                                >
+                                    <div
+                                        class="w-6 h-6 flex items-center justify-center rounded-lg bg-black/40 text-[10px] font-black italic"
+                                        :class="
+                                            index === 0
+                                                ? 'text-brand-yellow'
+                                                : 'text-white/40'
+                                        "
+                                    >
+                                        {{ index + 1 }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-[10px] font-bold text-white truncate"
+                                        >
+                                            {{ stat.name }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p
+                                            class="text-[11px] font-black italic text-brand-yellow"
+                                        >
+                                            {{ stat.score }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </TransitionGroup>
+                        </div>
+                    </div>
+
                     <div class="absolute bottom-20 left-12 space-y-2">
                         <div
                             class="flex items-center gap-3 bg-red-600 px-4 py-1 self-start w-fit rounded-sm mb-4"
@@ -203,22 +264,27 @@ onUnmounted(() => {
                             <p
                                 class="text-[10px] font-black text-brand-yellow uppercase tracking-[0.4em] mb-4"
                             >
-                                Current Standing
+                                Live Adjudication
                             </p>
                             <div class="flex items-end justify-between">
                                 <h3
                                     class="text-4xl font-black italic uppercase tracking-tighter"
                                 >
-                                    Average Score
+                                    Participation Weighted Score
                                 </h3>
                                 <div class="flex items-baseline gap-2">
                                     <span
                                         class="text-8xl font-black italic text-brand-yellow"
-                                        >{{ activePerformance.avgRating }}</span
+                                        >{{
+                                            activePerformance.finalScore
+                                        }}</span
                                     >
                                     <span
                                         class="text-xl font-bold text-gray-600"
-                                        >/ 5.0</span
+                                        >/
+                                        {{
+                                            activePerformance.avgMax || "75.0"
+                                        }}</span
                                     >
                                 </div>
                             </div>
@@ -229,7 +295,9 @@ onUnmounted(() => {
                                     class="h-full bg-brand-yellow shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all duration-1000"
                                     :style="{
                                         width:
-                                            (activePerformance.avgRating / 5) *
+                                            (activePerformance.finalScore /
+                                                (activePerformance.avgMax ||
+                                                    75)) *
                                                 100 +
                                             '%',
                                     }"
@@ -237,52 +305,23 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-6">
-                            <div
-                                class="p-8 rounded-3xl bg-white/2 border border-white/5"
-                            >
-                                <p
-                                    class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4"
-                                >
-                                    Audience Ratings
-                                </p>
-                                <span
-                                    class="text-6xl font-black italic tabular-nums"
-                                    >{{ activePerformance.fan_votes }}</span
-                                >
-                            </div>
-                            <div
-                                class="p-8 rounded-3xl bg-white/2 border border-white/5"
-                            >
-                                <p
-                                    class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4"
-                                >
-                                    Judges' Ratings
-                                </p>
-                                <span
-                                    class="text-6xl font-black italic tabular-nums"
-                                    >{{ activePerformance.judge_votes }}</span
-                                >
-                            </div>
-                        </div>
-
                         <div
-                            class="flex items-center justify-between px-8 py-6 rounded-3xl bg-brand-yellow text-black"
+                            class="flex items-center justify-between px-8 py-10 rounded-3xl bg-white/2 border border-white/5"
                         >
                             <div>
                                 <p
-                                    class="text-[9px] font-black uppercase tracking-widest opacity-60"
+                                    class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-4"
                                 >
-                                    Total Engagement
+                                    Global Engagement
                                 </p>
                                 <h4
-                                    class="text-2xl font-black italic uppercase tracking-tight leading-none"
+                                    class="text-4xl font-black italic uppercase tracking-tighter leading-none"
                                 >
-                                    Total Ratings
+                                    Total Participants
                                 </h4>
                             </div>
                             <span
-                                class="text-6xl font-black italic tabular-nums tracking-tighter"
+                                class="text-8xl font-black italic tabular-nums tracking-tighter text-brand-yellow"
                                 >{{ activePerformance.voteCount }}</span
                             >
                         </div>
@@ -412,5 +451,33 @@ onUnmounted(() => {
 }
 .animate-fade-in-up {
     animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fade-in-left {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.animate-fade-in-left {
+    animation: fade-in-left 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* List Transitions */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+}
+.list-leave-active {
+    position: absolute;
 }
 </style>
