@@ -33,18 +33,21 @@ const navItems = [
 <template>
     <div class="min-h-screen bg-brand-black text-white font-sans flex flex-col">
         <!-- Admin Top Nav - Matches Lineup.vue exactly -->
-        <nav class="sticky top-0 z-50 glass-nav px-6 py-4 border-b border-white/5 bg-brand-black/50 backdrop-blur-2xl">
+        <nav
+            class="sticky top-0 z-50 glass-nav px-6 py-4 border-b border-white/5 bg-brand-black/50 backdrop-blur-2xl"
+        >
             <div class="max-w-md mx-auto flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link href="/lineup"
-                        class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-yellow transition-all flex items-center gap-1.5">
+                    <Link
+                        href="/lineup"
+                        class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-yellow transition-all flex items-center gap-1.5"
+                    >
                         <span class="text-xs">&larr;</span> Exit
                     </Link>
                     <div class="h-4 w-px bg-white/10"></div>
-
-                    <Link href="/admin/dashboard">
-                        <img :src="'/assets/star-yako-logo.png'" alt="Star Yako Logo" class="h-8 w-auto object-contain" />
-                    </Link>
+                    <h1 class="text-2xl font-black italic tracking-tighter">
+                        M<span class="text-brand-yellow">VOTE</span>
+                    </h1>
                 </div>
 
                 <UserMenu />
@@ -63,17 +66,32 @@ const navItems = [
 
         <nav class="fixed bottom-2 w-full max-w-md z-50 pointer-events-none">
             <div
-                class="bg-brand-black/80 backdrop-blur-2xl rounded-full p-2 px-6 flex items-center justify-between border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto mx-4">
-                <Link v-for="item in navItems" :key="item.name" :href="item.href"
+                class="bg-brand-black/80 backdrop-blur-2xl rounded-full p-2 px-6 flex items-center justify-between border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto mx-4"
+            >
+                <Link
+                    v-for="item in navItems"
+                    :key="item.name"
+                    :href="item.href"
                     class="flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 relative group"
                     :class="[
                         currentRoute.startsWith(item.href)
                             ? 'bg-brand-yellow text-black shadow-[0_4px_15px_rgba(255,107,0,0.4)]'
                             : 'text-gray-500 hover:text-white hover:bg-white/5',
-                    ]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="item.icon" />
+                    ]"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                            :d="item.icon"
+                        />
                     </svg>
                 </Link>
             </div>

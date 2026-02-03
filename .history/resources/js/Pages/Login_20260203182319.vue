@@ -97,7 +97,7 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
 
         <div class="mb-10 text-center relative z-10 animate-fade-up">
             <div class="flex flex-col items-center">
-                <img :src="'/assets/star-yako-logo.png'" alt="Star Yako Logo" class="h-14 w-auto mb-2 drop-shadow-glow" />
+                <img :src="'/assets/star-yako-logo.png'" alt="Star Yako Logo" class="h-20 w-auto mb-2 drop-shadow-glow" />
                 
                 <h2 class="text-white text-xl font-bold tracking-tight mb-1">
                     Artist Voting Platform

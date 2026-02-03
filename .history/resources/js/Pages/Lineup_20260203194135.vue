@@ -101,53 +101,53 @@ const openVoting = (artist) => {
             <UserMenu />
         </nav>
 
-        <div class="px-5 pt-6">
-            <div class="relative mb-8 overflow-hidden rounded-xl aspect-[14/13] sm:aspect-[21/9] bg-zinc-900 border border-white/5 shadow-2xl">
-                <div v-for="(img, index) in carouselImages" :key="index"
-                    class="absolute inset-0 transition-opacity duration-1000"
-                    :class="currentSlide === index ? 'opacity-100 z-10' : 'opacity-0'">
-                    <img :src="img" class="w-full h-full object-cover" />
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                </div>
-            </div>
-
-            <header class="mb-8 px-1">
-                <h2 class="text-4xl font-extrabold tracking-tight italic uppercase">
-                    Artist Lineup
-                </h2>
-                <p class="text-zinc-500 font-medium text-sm">
-                    Tonight's performing artists
-                </p>
-            </header>
-
-            <div class="relative mb-8">
-                <input v-model="searchQuery" type="text" placeholder="Search artist or genre..." 
-                    class="w-full bg-white/[0.05] backdrop-blur-md border border-white/10 px-12 py-4 rounded-xl outline-none focus:border-[#ffcd00]/40 transition-all text-sm font-medium" />
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between mb-4 px-1">
-                <h2 class="text-2xl font-black italic uppercase tracking-tighter">Lineup</h2>
-                <div class="flex gap-4">
-                    <button @click="activeTab = 'upcoming'" class="text-[11px] font-black uppercase tracking-widest" :class="activeTab === 'upcoming' ? 'text-[#ffcd00]' : 'text-zinc-500'">Lined Up</button>
-                    <button @click="activeTab = 'closed'" class="text-[11px] font-black uppercase tracking-widest" :class="activeTab === 'closed' ? 'text-[#ffcd00]' : 'text-zinc-500'">Past</button>
-                </div>
-            </div>
-
-            <div class="p-4 rounded-xl border border-[#ffcd00]/30 bg-gradient-to-b from-[#ffcd00]/5 to-transparent shadow-[0_0_40px_rgba(255,205,0,0.02)]">
+        <div class="px-4 pt-6">
+            <div class="p-4 rounded-xl border border-[#ffcd00]/30 bg-gradient-to-b from-[#ffcd00]/5 to-transparent shadow-[0_0_50px_rgba(255,205,0,0.03)]">
                 
+                <div class="relative mb-8 overflow-hidden rounded-lg aspect-[14/13] sm:aspect-[21/9] bg-zinc-900 border border-white/5">
+                    <div v-for="(img, index) in carouselImages" :key="index"
+                        class="absolute inset-0 transition-opacity duration-1000"
+                        :class="currentSlide === index ? 'opacity-100 z-10' : 'opacity-0'">
+                        <img :src="img" class="w-full h-full object-cover" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    </div>
+                </div>
+
+                <header class="mb-6 px-1">
+                    <h2 class="text-3xl font-black tracking-tight italic uppercase">
+                        Artist Lineup
+                    </h2>
+                    <p class="text-zinc-500 font-medium text-xs">
+                        Tonight's performing artists
+                    </p>
+                </header>
+
+                <div class="relative mb-8">
+                    <input v-model="searchQuery" type="text" placeholder="Search artist or genre..." 
+                        class="w-full bg-white/[0.05] backdrop-blur-md border border-white/10 px-12 py-4 rounded-lg outline-none focus:border-[#ffcd00]/40 transition-all text-sm" />
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <h2 class="text-xl font-black italic uppercase tracking-tighter">Lineup</h2>
+                    <div class="flex gap-4">
+                        <button @click="activeTab = 'upcoming'" class="text-[10px] font-black uppercase tracking-widest" :class="activeTab === 'upcoming' ? 'text-[#ffcd00]' : 'text-zinc-500'">Lined Up</button>
+                        <button @click="activeTab = 'closed'" class="text-[10px] font-black uppercase tracking-widest" :class="activeTab === 'closed' ? 'text-[#ffcd00]' : 'text-zinc-500'">Past</button>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div v-if="featuredArtist && !searchQuery" class="col-span-2 mb-2">
-                        <div class="relative rounded-xl overflow-hidden glass-card-border bg-white/[0.03] backdrop-blur-xl h-[190px]">
+                        <div class="relative rounded-lg overflow-hidden glass-card-border bg-white/[0.03] backdrop-blur-xl h-[190px]">
                             <div class="relative z-10 flex h-full">
                                 <div class="flex-1 p-6 flex flex-col justify-center">
                                     <span class="text-[#ffcd00] text-[9px] font-black uppercase tracking-[0.2em] mb-1">Performing Now</span>
                                     <h3 class="text-2xl font-black italic uppercase leading-none mb-4 truncate">{{ featuredArtist.name }}</h3>
                                     <div class="flex gap-2">
-                                        <Link :href="`/artist/${featuredArtist.id}`" class="bg-white/10 border border-white/10 text-[9px] font-black uppercase px-5 py-2.5 rounded-lg">Profile</Link>
-                                        <button v-if="featuredArtist.status === 'live'" @click="openVoting(featuredArtist)" class="bg-[#ffcd00] text-black text-[9px] font-black uppercase px-5 py-2.5 rounded-lg shadow-lg">Vote Now</button>
+                                        <Link :href="`/artist/${featuredArtist.id}`" class="bg-white/10 border border-white/10 text-[9px] font-black uppercase px-5 py-2.5 rounded-md">Profile</Link>
+                                        <button v-if="featuredArtist.status === 'live'" @click="openVoting(featuredArtist)" class="bg-[#ffcd00] text-black text-[9px] font-black uppercase px-5 py-2.5 rounded-md shadow-lg">Vote Now</button>
                                     </div>
                                 </div>
                                 <div class="w-2/5 h-full relative overflow-hidden">
@@ -159,10 +159,10 @@ const openVoting = (artist) => {
                     </div>
 
                     <div v-for="artist in displayArtists" :key="artist.id" 
-                        class="relative p-1 rounded-xl transition-all duration-300"
+                        class="relative p-1 rounded-lg transition-all duration-300"
                         :class="artist.status === 'live' ? 'glass-card-live shadow-[0_0_20px_rgba(255,205,0,0.1)]' : 'glass-card-border bg-white/[0.02] backdrop-blur-lg'">
                         
-                        <div class="relative aspect-square rounded-lg overflow-hidden mb-3">
+                        <div class="relative aspect-square rounded-md overflow-hidden mb-3">
                             <img :src="artist.image" class="w-full h-full object-cover img-fade-bottom" />
                             <div v-if="artist.status === 'upcoming'" class="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">
                                 <span class="text-[8px] font-black text-white uppercase tracking-tighter">Upcoming</span>

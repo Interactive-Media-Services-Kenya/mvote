@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         $adminRole = \App\Models\Role::where('name', 'admin')->first();
 
         User::firstOrCreate(
-            ['phone' => '254703644281'],
+            ['phone' => '254706783789'],
             [
                 'nick_name' => 'Admin',
                 'role_id' => $adminRole->id,

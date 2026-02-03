@@ -43,7 +43,7 @@ const navItems = [
                     <div class="h-4 w-px bg-white/10"></div>
 
                     <Link href="/admin/dashboard">
-                        <img :src="'/assets/star-yako-logo.png'" alt="Star Yako Logo" class="h-8 w-auto object-contain" />
+                        <img src="/assets/star-yako-logo.png" alt="Star Yako Logo" class="h-7 w-auto object-contain" />
                     </Link>
                 </div>
 
