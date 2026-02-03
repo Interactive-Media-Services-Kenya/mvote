@@ -12,12 +12,23 @@ class GenreSeeder extends Seeder
      */
     public function run(): void
     {
-        $genres = ['Afro-Pop', 'Afro-Fusion', 'Afrobeats', 'Alt-R&B', 'Bongo Flava', 'Reggae', 'Hip Hop', 'Dancehall'];
+        $genres = [
+            'gengetone',
+            'afro pop',
+            'afrosoul',
+            '3 step',
+            'jazz,rap',
+            'kompa',
+            'rumba congolaise',
+            '-',
+            'afro r&b',
+            'afro soul'
+        ];
         
         foreach ($genres as $genre) {
             \App\Models\Genre::firstOrCreate(
                 ['title' => $genre],
-                ['description' => $genre . ' musical genre']
+                ['description' => $genre === '-' ? 'No genre specified' : $genre . ' musical genre']
             );
         }
     }
