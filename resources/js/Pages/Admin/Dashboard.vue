@@ -202,7 +202,6 @@ const encodeName = (name) => encodeURIComponent(name);
                 </p>
             </header>
 
-            <!-- Stats Grid - Mobile First Single Column -->
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div
                     v-for="stat in displayStats"
@@ -333,7 +332,6 @@ const encodeName = (name) => encodeURIComponent(name);
                                         {{ timeRemaining }}
                                     </p>
                                 </div>
-
                                 <div class="grid grid-cols-2 gap-2">
                                     <button
                                         @click="togglePause"
@@ -402,7 +400,6 @@ const encodeName = (name) => encodeURIComponent(name);
                 </div>
             </section>
 
-            <!-- On Deck / Finished Tabs -->
             <section class="mb-12">
                 <div
                     class="flex items-center gap-6 mb-6 border-b border-white/5 px-2"
@@ -479,56 +476,146 @@ const encodeName = (name) => encodeURIComponent(name);
                     <div
                         v-for="artist in closedArtists"
                         :key="artist.id"
-                        class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group opacity-80"
+                        class="flex flex-col gap-2"
                     >
-                        <div class="flex-1">
-                            <h4
-                                class="text-xs font-black uppercase italic tracking-tighter mb-2"
-                            >
-                                {{ artist.name }}
-                            </h4>
+                        <div
+                            class="glass-card p-4 rounded-3xl border-white/5 flex items-center gap-4 transition-all group opacity-80"
+                        >
+                            <div class="flex-1">
+                                <h4
+                                    class="text-xs font-black uppercase italic tracking-tighter mb-2"
+                                >
+                                    {{ artist.name }}
+                                </h4>
+                                <div class="flex gap-2">
+                                    <div
+                                        class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                                    >
+                                        <span
+                                            class="text-[8px] font-black italic text-green-500"
+                                            >{{ artist.fan_voters }}</span
+                                        >
+                                        <span
+                                            class="text-[7px] font-bold uppercase text-gray-500"
+                                            >Audience</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg"
+                                    >
+                                        <span
+                                            class="text-[8px] font-black italic text-blue-500"
+                                            >{{ artist.judge_voters }}</span
+                                        >
+                                        <span
+                                            class="text-[7px] font-bold uppercase text-gray-500"
+                                            >Judges</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
                             <div class="flex gap-2">
-                                <div
-                                    class="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                                <button
+                                    v-if="
+                                        artist.voter_logs &&
+                                        artist.voter_logs.length > 0
+                                    "
+                                    @click="
+                                        artist.showVoters = !artist.showVoters
+                                    "
+                                    class="px-3 py-1 bg-brand-yellow/10 text-brand-yellow text-[8px] font-black uppercase tracking-widest rounded-lg border border-brand-yellow/20 hover:bg-brand-yellow/20 transition-all"
                                 >
-                                    <span
-                                        class="text-[8px] font-black italic text-green-500"
-                                        >{{ artist.fan_voters }}</span
-                                    >
-                                    <span
-                                        class="text-[7px] font-bold uppercase text-gray-500"
-                                        >Audience</span
-                                    >
-                                </div>
+                                    {{
+                                        artist.showVoters
+                                            ? "Hide Logs"
+                                            : "View Logs"
+                                    }}
+                                </button>
                                 <div
-                                    class="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg"
+                                    class="px-3 py-1 bg-white/5 text-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5"
                                 >
-                                    <span
-                                        class="text-[8px] font-black italic text-blue-500"
-                                        >{{ artist.judge_voters }}</span
-                                    >
-                                    <span
-                                        class="text-[7px] font-bold uppercase text-gray-500"
-                                        >Judges</span
-                                    >
+                                    Done
                                 </div>
+                                <button
+                                    v-if="artist.performance_id"
+                                    @click="
+                                        resetPerformance(artist.performance_id)
+                                    "
+                                    class="px-3 py-1 bg-white/10 text-white/60 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5 hover:bg-white/20 transition-all"
+                                >
+                                    Reset
+                                </button>
                             </div>
                         </div>
-                        <div class="flex gap-2">
+
+                        <Transition name="fade-down">
                             <div
-                                class="px-3 py-1 bg-white/5 text-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5"
+                                v-if="artist.showVoters"
+                                class="px-4 pb-4 -mt-2"
                             >
-                                Done
+                                <div
+                                    class="bg-black/40 rounded-2xl border border-white/5 overflow-hidden"
+                                >
+                                    <table class="w-full text-left text-[8px]">
+                                        <thead>
+                                            <tr
+                                                class="border-b border-white/5 bg-white/5"
+                                            >
+                                                <th
+                                                    class="px-3 py-2 font-black uppercase text-gray-500"
+                                                >
+                                                    Voter
+                                                </th>
+                                                <th
+                                                    class="px-3 py-2 font-black uppercase text-gray-500"
+                                                >
+                                                    Role
+                                                </th>
+                                                <th
+                                                    class="px-3 py-2 font-black uppercase text-gray-500 text-right"
+                                                >
+                                                    Points
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-white/5">
+                                            <tr
+                                                v-for="log in artist.voter_logs"
+                                                :key="log.nickname"
+                                            >
+                                                <td
+                                                    class="px-3 py-2 font-bold text-white"
+                                                >
+                                                    {{ log.nickname }}
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    <span
+                                                        :class="[
+                                                            'px-1.5 py-0.5 rounded-md uppercase font-black tracking-tighter',
+                                                            log.role === 'judge'
+                                                                ? 'bg-blue-500/10 text-blue-500'
+                                                                : 'bg-green-500/10 text-green-500',
+                                                        ]"
+                                                    >
+                                                        {{ log.role }}
+                                                    </span>
+                                                </td>
+                                                <td
+                                                    class="px-3 py-2 text-right font-black italic text-brand-yellow"
+                                                >
+                                                    {{ log.points }}
+                                                    <span class="text-white/20"
+                                                        >/ {{ log.max }}</span
+                                                    >
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <button
-                                v-if="artist.performance_id"
-                                @click="resetPerformance(artist.performance_id)"
-                                class="px-3 py-1 bg-white/10 text-white/60 text-[8px] font-black uppercase tracking-widest rounded-lg border border-white/5 hover:bg-white/20 transition-all"
-                            >
-                                Reset
-                            </button>
-                        </div>
+                        </Transition>
                     </div>
+
                     <div
                         v-if="closedArtists.length === 0"
                         class="col-span-full py-12 text-center text-gray-600 font-bold uppercase text-[10px] tracking-widest border border-dashed border-white/5 rounded-3xl"

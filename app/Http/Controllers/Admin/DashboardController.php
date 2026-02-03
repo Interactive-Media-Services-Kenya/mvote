@@ -25,9 +25,9 @@ class DashboardController extends Controller
             ->get()
             ->map(function($artist) {
                 $performance = $artist->performances->first();
+                $voterLogs = [];
                 $fanVoters = 0;
                 $judgeVoters = 0;
-
                 if ($performance) {
                     $fanVoters = Vote::where('performance_id', $performance->id)
                         ->whereHas('user.role', fn($q) => $q->where('name', 'fan'))
@@ -38,6 +38,22 @@ class DashboardController extends Controller
                         ->whereHas('user.role', fn($q) => $q->where('name', 'judge'))
                         ->distinct('user_id')
                         ->count('user_id');
+
+                    if ($artist->status === 'closed') {
+                        $voterLogs = Vote::where('performance_id', $performance->id)
+                            ->with('user')
+                            ->get()
+                            ->groupBy('user_id')
+                            ->map(function($userVotes) use ($performance) {
+                                $user = $userVotes->first()->user;
+                                return [
+                                    'nickname' => $user->nick_name ?? 'Anonymous',
+                                    'role' => $user->role->name ?? 'fan',
+                                    'points' => $performance->userRatedPoints($user),
+                                    'max' => $performance->maxPossiblePoints($user)
+                                ];
+                            })->values();
+                    }
                 }
 
                 return [
@@ -48,6 +64,7 @@ class DashboardController extends Controller
                     'performance_id' => $performance?->id,
                     'fan_voters' => $fanVoters,
                     'judge_voters' => $judgeVoters,
+                    'voter_logs' => $voterLogs,
                 ];
             });
 

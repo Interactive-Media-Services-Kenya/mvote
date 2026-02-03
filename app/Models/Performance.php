@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Performance extends Model
 {
@@ -40,40 +41,74 @@ class Performance extends Model
         return $this->hasMany(Vote::class);
     }
 
-    public function getAverageScoreAttribute()
+    public function maxPossiblePoints(User $user)
     {
-        $votes = $this->votes()->with(['user.role', 'question'])->get();
+        $role = $user->role->name ?? 'fan';
+        $target = in_array($role, ['judge', 'admin']) ? 'judge' : 'fan';
+
+        $ratingQuestionsCount = $this->event->questions()
+            ->where('type', 'rating')
+            ->whereIn('target', [$target, 'both'])
+            ->count();
+
+        return $ratingQuestionsCount * 5; // Each question has a max of 5 points
+    }
+
+    public function userRatedPoints(User $user)
+    {
+        return $this->votes()
+            ->where('user_id', $user->id)
+            ->whereHas('question', function ($query) {
+                $query->where('type', 'rating');
+            })
+            ->sum('rating');
+    }
+
+    public function getGlobalRatingData()
+    {
+        $votes = $this->votes()
+            ->with(['user.role', 'question' => function($q) {
+                $q->where('type', 'rating');
+            }])
+            ->get()
+            ->filter(function($vote) {
+                return $vote->question && $vote->question->type === 'rating';
+            });
+
         if ($votes->isEmpty()) {
-            return 0;
+            return [
+                'average_points' => 0,
+                'max_points' => 0,
+                'average_percentage' => 0
+            ];
         }
 
-        $event = $this->event;
-        // Total RATING questions available for each role
-        $totalFanQuestions = $event->questions()
-            ->where('type', 'rating')
-            ->whereIn('target', ['fan', 'both'])
-            ->count();
-
-        $totalJudgeQuestions = $event->questions()
-            ->where('type', 'rating')
-            ->whereIn('target', ['judge', 'both'])
-            ->count();
-
-        $voterScores = $votes->groupBy('user_id')->map(function ($userVotes) use ($totalFanQuestions, $totalJudgeQuestions) {
+        // We need to calculate the average points across all users.
+        // Each user has a different "max points" if they are a judge vs a fan (though usually they are the same for rating questions).
+        
+        $userScores = $votes->groupBy('user_id')->map(function ($userVotes) {
             $user = $userVotes->first()->user;
-            $role = $user->role->name ?? 'fan';
-            $target = $role === 'judge' ? 'judge' : 'fan';
-
-            $totalQuestions = ($target === 'judge') ? $totalJudgeQuestions : $totalFanQuestions;
-
-            if ($totalQuestions == 0) {
-                return 0;
-            }
-
-            $sumRatings = $userVotes->where('question.type', 'rating')->sum('rating');
-            return $sumRatings / $totalQuestions;
+            return [
+                'points' => $userVotes->sum('rating'),
+                'max' => $this->maxPossiblePoints($user)
+            ];
         });
 
-        return $totalFanQuestions;
+        $totalPoints = $userScores->sum('points');
+        $totalMaxPoints = $userScores->sum('max');
+        $avgPoints = $userScores->avg('points');
+        $avgMax = $userScores->avg('max');
+
+        return [
+            'average_points' => round($avgPoints, 1),
+            'max_points' => round($avgMax, 1),
+            'average_percentage' => $totalMaxPoints > 0 ? round(($totalPoints / $totalMaxPoints) * 100, 1) : 0
+        ];
+    }
+
+    public function getAverageScoreAttribute()
+    {
+        $data = $this->getGlobalRatingData();
+        return $data['average_points'];
     }
 }

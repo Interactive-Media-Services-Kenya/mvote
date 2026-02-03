@@ -35,7 +35,7 @@ class VoteController extends Controller
         }
 
         $role = $user->role->name ?? 'fan';
-        $target = $role === 'judge' ? 'judge' : 'fan';
+        $target = in_array($role, ['judge', 'admin']) ? 'judge' : 'fan';
 
         foreach ($request->ratings as $questionId => $answer) {
             $question = \App\Models\VotingQuestion::find($questionId);

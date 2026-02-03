@@ -139,8 +139,35 @@ const goBack = () => {
                 </h1>
 
                 <!-- Schedule & Live Status -->
-                <div class="flex items-center gap-3 mb-6 animate-fade-up">
+                <div class="flex flex-wrap gap-3 mb-6 animate-fade-up">
                     <div
+                        v-if="artist.is_performing"
+                        class="bg-red-600/20 px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_15px_rgba(220,38,38,0.2)] border border-red-600/30"
+                    >
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"
+                        ></span>
+                        <span
+                            class="text-[10px] font-black uppercase tracking-tighter text-red-500"
+                            >Performing Live</span
+                        >
+                    </div>
+
+                    <div
+                        v-if="artist.is_voting_open"
+                        class="bg-brand-yellow/20 px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,205,0,0.2)] border border-brand-yellow/30"
+                    >
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse"
+                        ></span>
+                        <span
+                            class="text-[10px] font-black uppercase tracking-tighter text-brand-yellow"
+                            >Voting Open</span
+                        >
+                    </div>
+
+                    <div
+                        v-if="!isLive"
                         class="glass-card px-4 py-2 rounded-xl border-white/10 flex items-center gap-2"
                     >
                         <svg
@@ -160,60 +187,79 @@ const goBack = () => {
                         <span
                             class="text-xs font-bold uppercase tracking-widest text-gray-300"
                         >
-                            {{
-                                isLive
-                                    ? "On Stage Now"
-                                    : `Scheduled: ${artist.scheduledTime}`
-                            }}
+                            Scheduled: {{ artist.scheduledTime }}
                         </span>
                     </div>
 
                     <div
-                        v-if="isLive"
-                        class="bg-red-600 px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_15px_rgba(220,38,38,0.4)] animate-pulse"
+                        v-if="artist.is_performing && artist.is_voting_paused"
+                        class="bg-orange-600/20 px-3 py-2 rounded-xl border border-orange-600/30"
                     >
-                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
                         <span
-                            class="text-[10px] font-black uppercase tracking-tighter"
-                            >Live</span
+                            class="text-[10px] font-black uppercase tracking-tighter text-orange-500"
+                            >Voting Paused</span
                         >
                     </div>
                 </div>
 
                 <div class="flex gap-4 mb-8">
+                    <div v-if="artist.hasVoted" class="flex-1 flex gap-4">
+                        <div
+                            class="glass-card px-6 py-3 rounded-2xl border-white/10 flex-1 flex flex-col justify-center"
+                        >
+                            <span
+                                class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
+                                >Your Rating</span
+                            >
+                            <span
+                                class="text-xl font-black italic text-brand-yellow"
+                                >{{ artist.voterRating?.points }}/{{
+                                    artist.voterRating?.max
+                                }}</span
+                            >
+                        </div>
+                        <div
+                            v-if="artist.globalRating"
+                            class="glass-card px-6 py-3 rounded-2xl border-white/10 flex-1 flex flex-col justify-center"
+                        >
+                            <span
+                                class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
+                                >Global Avg</span
+                            >
+                            <span class="text-xl font-black italic text-white"
+                                >{{ artist.globalRating.average_points }}/{{
+                                    artist.globalRating.max_points
+                                }}</span
+                            >
+                        </div>
+                    </div>
                     <button
+                        v-else
                         @click="
-                            isLive &&
-                            artist.voting_started_at &&
-                            !artist.hasVoted
+                            artist.is_voting_open && !artist.hasVoted
                                 ? (showVoting = true)
                                 : null
                         "
-                        :disabled="
-                            (artist.is_voting_paused && isLive) ||
-                            artist.hasVoted
-                        "
+                        :disabled="!artist.is_voting_open || artist.hasVoted"
                         :class="[
                             'px-8 py-3 rounded-full font-bold flex-1 active:scale-95 transition-transform uppercase text-sm tracking-widest',
                             artist.hasVoted
                                 ? 'bg-green-600 text-white'
-                                : isLive
-                                  ? artist.is_voting_paused
-                                      ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
-                                      : artist.voting_started_at
-                                        ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
-                                        : 'bg-red-600 text-white'
-                                  : 'bg-white text-black',
+                                : artist.is_voting_open
+                                  ? 'bg-brand-yellow text-black animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.4)]'
+                                  : artist.is_performing
+                                    ? 'bg-red-600/20 text-red-500 border border-red-600/30'
+                                    : 'bg-white text-black',
                         ]"
                     >
                         {{
                             artist.hasVoted
                                 ? "Rated"
-                                : isLive
-                                  ? artist.voting_started_at
-                                      ? `Rate Now ${timeRemaining}`
-                                      : "Performing Now"
-                                  : "Follow"
+                                : artist.is_voting_open
+                                  ? `Rate Now ${timeRemaining}`
+                                  : artist.is_performing
+                                    ? "Performing Now"
+                                    : "Follow"
                         }}
                     </button>
                     <button

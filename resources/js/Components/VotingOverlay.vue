@@ -360,6 +360,31 @@ const progressWidth = computed(() => {
                                 >
                                     Rating Submitted!
                                 </h2>
+                                <div class="space-y-4 mb-8">
+                                    <div
+                                        class="glass-card p-4 rounded-2xl border-white/5 bg-white/5"
+                                    >
+                                        <p
+                                            class="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1"
+                                        >
+                                            Your Rating
+                                        </p>
+                                        <p
+                                            class="text-2xl font-black italic text-brand-yellow"
+                                        >
+                                            {{
+                                                artist.voterRating?.points || 0
+                                            }}
+                                            <span
+                                                class="text-white/40 not-italic text-sm"
+                                                >/
+                                                {{
+                                                    artist.voterRating?.max || 0
+                                                }}</span
+                                            >
+                                        </p>
+                                    </div>
+                                </div>
                                 <p class="text-gray-400 font-medium mb-6">
                                     Thank you for your rating,
                                     {{ user?.nick_name || "Voter" }}! Your

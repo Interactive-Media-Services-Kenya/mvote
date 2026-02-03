@@ -212,7 +212,7 @@ onMounted(() => {
                                 v-model="form.nick_name"
                                 type="text"
                                 placeholder="Enter your nickname"
-                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium text-center"
+                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium"
                                 :class="{
                                     'border-red-500/50 bg-red-500/5':
                                         form.errors.nick_name,
@@ -220,7 +220,7 @@ onMounted(() => {
                             />
                             <p
                                 v-if="form.errors.nick_name"
-                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight text-center"
+                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight"
                             >
                                 {{ form.errors.nick_name }}
                             </p>

@@ -21,7 +21,7 @@ class LineupController extends Controller
             return redirect()->route('login');
 
         $role = $user->role->name ?? 'fan';
-        $target = $role === 'judge' ? 'judge' : 'fan';
+        $target = in_array($role, ['judge', 'admin']) ? 'judge' : 'fan';
 
         $event = Event::where('is_active', true)->latest()->first();
         if ($event) {
@@ -40,17 +40,34 @@ class LineupController extends Controller
             ->where('event_id', $event->id)
             ->first();
 
+        // Pre-calculate if user has voted for the active performance
+        $hasVotedActive = false;
+        if ($activePerformance && $user) {
+            $hasVotedActive = Vote::where('user_id', $user->id)
+                ->where('performance_id', $activePerformance->id)
+                ->exists();
+        }
+
         $artists = Artist::with('genre')
             ->where('is_active', true)
             ->get()
-            ->map(function ($artist) use ($activePerformance, $user) {
+            ->map(function ($artist) use ($activePerformance, $user, $hasVotedActive) {
                 $isLive = $activePerformance && $activePerformance->artist_id === $artist->id;
 
                 $hasVoted = false;
+                $voterRating = null;
+                $globalRating = null;
+
                 if ($isLive && $user) {
-                    $hasVoted = Vote::where('user_id', $user->id)
-                        ->where('performance_id', $activePerformance->id)
-                        ->exists();
+                    $hasVoted = $hasVotedActive;
+
+                    if ($hasVoted) {
+                        $voterRating = [
+                            'points' => $activePerformance->userRatedPoints($user),
+                            'max' => $activePerformance->maxPossiblePoints($user)
+                        ];
+                        $globalRating = $activePerformance->getGlobalRatingData();
+                    }
                 }
 
                 $statusRank = match ($isLive ? 'live' : $artist->status) {
@@ -60,12 +77,20 @@ class LineupController extends Controller
                     default => 4,
                 };
 
+                $isPerforming = $isLive;
+                $isVotingOpen = $isLive && 
+                                $activePerformance->voting_started_at && 
+                                ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
+                                !$activePerformance->is_voting_paused;
+
                 return [
                     'id' => $artist->id,
                     'name' => $artist->name,
                     'genre' => $artist->genre->title ?? 'Unknown',
                     'image' => $artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artist->name),
                     'status' => $isLive ? 'live' : $artist->status,
+                    'is_performing' => $isPerforming,
+                    'is_voting_open' => $isVotingOpen,
                     'status_rank' => $statusRank,
                     'lineup_order' => $artist->lineup_order,
                     'scheduled_time' => $artist->scheduled_time ? $artist->scheduled_time->format('H:i') : '--:--',
@@ -75,6 +100,8 @@ class LineupController extends Controller
                     'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
                     'performance_id' => $isLive ? $activePerformance->id : null,
                     'hasVoted' => $hasVoted,
+                    'voterRating' => $voterRating,
+                    'globalRating' => $globalRating,
                 ];
             })
             ->sort(function ($a, $b) {
@@ -94,8 +121,15 @@ class LineupController extends Controller
                 'artist_id' => $activePerformance->artist_id,
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
-                'is_voting_paused' => $activePerformance->is_voting_paused,
-                'hasVoted' => Vote::where('user_id', $user->id)->where('performance_id', $activePerformance->id)->exists(),
+                'is_performing' => true,
+                'is_voting_open' => $activePerformance->voting_started_at && 
+                                    ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
+                                    !$activePerformance->is_voting_paused,
+                'voterRating' => ($hasVotedActive) ? [
+                    'points' => $activePerformance->userRatedPoints($user),
+                    'max' => $activePerformance->maxPossiblePoints($user)
+                ] : null,
+                'globalRating' => ($hasVotedActive) ? $activePerformance->getGlobalRatingData() : null,
             ] : null
         ]);
     }
@@ -107,7 +141,7 @@ class LineupController extends Controller
             return redirect()->route('login');
 
         $role = $user->role->name ?? 'fan';
-        $target = $role === 'judge' ? 'judge' : 'fan';
+        $target = in_array($role, ['judge', 'admin']) ? 'judge' : 'fan';
 
         $event = Event::where('is_active', true)->latest()->first();
         if ($event) {
@@ -129,11 +163,28 @@ class LineupController extends Controller
 
         $isLive = $activePerformance && $activePerformance->artist_id === $artistModel->id;
         $hasVoted = false;
+        $voterRating = null;
+        $globalRating = null;
+
         if ($isLive && $user) {
             $hasVoted = Vote::where('user_id', $user->id)
                 ->where('performance_id', $activePerformance->id)
                 ->exists();
+
+            if ($hasVoted) {
+                $voterRating = [
+                    'points' => $activePerformance->userRatedPoints($user),
+                    'max' => $activePerformance->maxPossiblePoints($user)
+                ];
+                $globalRating = $activePerformance->getGlobalRatingData();
+            }
         }
+
+        $isPerforming = $isLive;
+        $isVotingOpen = $isLive && 
+                        $activePerformance->voting_started_at && 
+                        ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
+                        !$activePerformance->is_voting_paused;
 
         $artist = [
             'id' => $artistModel->id,
@@ -142,6 +193,8 @@ class LineupController extends Controller
             'image' => $artistModel->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artistModel->name),
             'bio' => $artistModel->bio,
             'status' => $isLive ? 'live' : $artistModel->status,
+            'is_performing' => $isPerforming,
+            'is_voting_open' => $isVotingOpen,
             'scheduledTime' => $artistModel->scheduled_time ? $artistModel->scheduled_time->format('H:i') : '--:--',
             'discography' => [],
             'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
@@ -149,6 +202,8 @@ class LineupController extends Controller
             'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
             'performance_id' => $isLive ? $activePerformance->id : null,
             'hasVoted' => $hasVoted,
+            'voterRating' => $voterRating,
+            'globalRating' => $globalRating,
         ];
 
         return Inertia::render('ArtistProfile', [
@@ -159,8 +214,12 @@ class LineupController extends Controller
                 'artist_id' => $activePerformance->artist_id,
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
+                'is_performing' => true,
+                'is_voting_open' => $isVotingOpen,
                 'is_voting_paused' => $activePerformance->is_voting_paused,
                 'hasVoted' => $hasVoted,
+                'voterRating' => $voterRating,
+                'globalRating' => $globalRating,
             ] : null
         ]);
     }
