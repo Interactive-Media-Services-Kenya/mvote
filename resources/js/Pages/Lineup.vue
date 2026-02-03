@@ -11,23 +11,49 @@ const props = defineProps({
 });
 
 const searchQuery = ref("");
+const activeTab = ref("upcoming"); // 'upcoming' or 'closed'
 const showVoting = ref(false);
 const activeArtist = ref(null);
 const timeRemaining = ref("");
 const isTimerActive = ref(false);
 let timerInterval = null;
 
+const featuredArtist = computed(() => {
+    // 1. Give priority to Live artist
+    if (liveArtist.value) return liveArtist.value;
+
+    // 2. Otherwise provide the first upcoming artist
+    const upcoming = (props.artists || []).find((a) => a.status === "upcoming");
+    return upcoming || null;
+});
+
 const liveArtist = computed(() =>
     (props.artists || []).find((a) => a.status === "live"),
 );
 
-const filteredArtists = computed(() => {
+const filteredArtistsBySearch = computed(() => {
     if (!searchQuery.value) return props.artists || [];
     return (props.artists || []).filter(
         (a) =>
             a.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
             a.genre.toLowerCase().includes(searchQuery.value.toLowerCase()),
     );
+});
+
+const displayArtists = computed(() => {
+    const list = filteredArtistsBySearch.value.filter(
+        (a) => a.id !== featuredArtist.value?.id,
+    );
+
+    if (searchQuery.value) return list;
+
+    if (activeTab.value === "upcoming") {
+        return list.filter(
+            (a) => a.status === "upcoming" || a.status === "live",
+        );
+    } else {
+        return list.filter((a) => a.status === "closed");
+    }
 });
 
 watch(
@@ -149,14 +175,153 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <!-- Artist Grid -->
+            <!-- Tabs Section -->
             <div
-                class="grid grid-cols-2 gap-6 border-yellow-900/70 p-0.5 border rounded-xl"
+                class="flex items-center gap-6 mb-8 border-b border-white/5 px-2"
             >
+                <button
+                    @click="activeTab = 'upcoming'"
+                    class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                    :class="
+                        activeTab === 'upcoming'
+                            ? 'text-brand-yellow'
+                            : 'text-gray-500 hover:text-white'
+                    "
+                >
+                    Lined Up
+                    <div
+                        v-if="activeTab === 'upcoming'"
+                        class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow shadow-[0_0_10px_#ffcd00]"
+                    ></div>
+                </button>
+                <button
+                    @click="activeTab = 'closed'"
+                    class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                    :class="
+                        activeTab === 'closed'
+                            ? 'text-brand-yellow'
+                            : 'text-gray-500 hover:text-white'
+                    "
+                >
+                    Performed
+                    <div
+                        v-if="activeTab === 'closed'"
+                        class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow shadow-[0_0_10px_#ffcd00]"
+                    ></div>
+                </button>
+            </div>
+
+            <!-- Artist Grid -->
+            <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                <!-- Featured Artist (Spans 2 columns) -->
                 <div
-                    v-for="artist in filteredArtists"
+                    v-if="featuredArtist && !searchQuery"
+                    class="col-span-2 mb-2 animate-fade-up"
+                >
+                    <div
+                        class="relative group rounded-3xl overflow-hidden border border-white/10 glass-card h-[180px] sm:h-[220px]"
+                        :class="{
+                            'artist-performing':
+                                featuredArtist.status === 'live',
+                        }"
+                    >
+                        <!-- Background Graphic Content -->
+                        <div
+                            class="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none overflow-hidden"
+                        >
+                            <div class="flex gap-1 items-end">
+                                <div
+                                    v-for="i in 12"
+                                    :key="i"
+                                    class="w-2 sm:w-3 bg-brand-yellow/40 rounded-full"
+                                    :style="{
+                                        height: Math.random() * 80 + 20 + '%',
+                                        animation: `hype-pulse ${
+                                            Math.random() * 1 + 0.5
+                                        }s infinite alternate`,
+                                    }"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10 flex h-full items-center">
+                            <!-- Left: Content -->
+                            <div
+                                class="flex-1 p-5 sm:p-7 flex flex-col justify-center"
+                            >
+                                <p
+                                    class="text-brand-yellow text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mb-1 sm:mb-2"
+                                >
+                                    {{
+                                        featuredArtist.status === "live"
+                                            ? "Currently Performing"
+                                            : "Next Up"
+                                    }}
+                                </p>
+                                <h3
+                                    class="text-2xl sm:text-4xl font-black italic tracking-tighter uppercase leading-none mb-3 sm:mb-4 truncate max-w-[200px] sm:max-w-md"
+                                >
+                                    {{ featuredArtist.name }}
+                                </h3>
+
+                                <div class="flex flex-wrap gap-2 sm:gap-3">
+                                    <Link
+                                        :href="`/artist/${featuredArtist.id}`"
+                                        class="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-black py-2.5 px-4 sm:px-6 rounded-xl uppercase text-[9px] sm:text-[10px] tracking-widest transition-all w-max border border-white/10"
+                                    >
+                                        View Profile
+                                    </Link>
+                                    <button
+                                        v-if="
+                                            featuredArtist.status === 'live' &&
+                                            featuredArtist.voting_started_at &&
+                                            !featuredArtist.hasVoted
+                                        "
+                                        @click="openVoting(featuredArtist)"
+                                        class="inline-flex items-center justify-center bg-brand-yellow text-black font-black py-2.5 px-4 sm:px-6 rounded-xl uppercase text-[9px] sm:text-[10px] tracking-widest hover:scale-105 transition-all w-max shadow-[0_0_20px_rgba(255,205,0,0.4)]"
+                                    >
+                                        Vote Now {{ timeRemaining }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Right: Photo -->
+                            <div
+                                class="w-1/3 sm:w-2/5 h-full relative overflow-hidden"
+                            >
+                                <img
+                                    :src="featuredArtist.image"
+                                    :alt="featuredArtist.name"
+                                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div
+                                    class="absolute inset-0 bg-linear-to-r from-brand-gray via-transparent to-transparent opacity-60"
+                                ></div>
+
+                                <div
+                                    v-if="featuredArtist.status === 'live'"
+                                    class="absolute bottom-4 right-4"
+                                >
+                                    <div
+                                        class="bg-red-600 px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-2xl animate-pulse"
+                                    >
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full bg-white"
+                                        ></span>
+                                        <span
+                                            class="text-[8px] font-black uppercase tracking-widest"
+                                            >Live</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    v-for="artist in displayArtists"
                     :key="artist.id"
-                    class="group relative p-3 rounded-2xl transition-all duration-500"
+                    class="group relative p-2 sm:p-3 rounded-2xl transition-all duration-500"
                     :class="[
                         artist.status === 'live'
                             ? 'artist-performing scale-[1.02]'
@@ -178,76 +343,76 @@ onUnmounted(() => {
                             <div
                                 class="absolute inset-x-0 bottom-0 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent"
                             >
-                                <!-- Voted Badge -->
                                 <div
                                     v-if="artist.hasVoted"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-green-500/20 backdrop-blur-md border border-green-500/30 text-[10px] uppercase font-black tracking-tight shadow-2xl"
+                                    class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-green-500/20 backdrop-blur-md border border-green-500/30 text-[9px] uppercase font-black tracking-tight"
                                 >
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"
+                                        class="w-1 h-1 rounded-full bg-green-500"
                                     ></span>
-                                    <span class="text-green-500 drop-shadow-sm"
-                                        >Voted</span
-                                    >
+                                    <span class="text-green-500">Voted</span>
                                 </div>
                                 <div
                                     v-else-if="artist.status === 'upcoming'"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/5 text-[9px] uppercase font-bold text-gray-300 shadow-xl"
+                                    class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[8px] uppercase font-bold text-gray-400"
                                 >
                                     Upcoming
                                 </div>
                             </div>
-
-                            <!-- Live Badge -->
-                            <!-- <div
-                                v-if="artist.status === 'live'"
-                                class="absolute top-3 right-3 bg-red-600 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(220,38,38,0.5)] border border-red-400/20"
-                            >
-                                <span
-                                    class="w-1 h-1 rounded-full bg-white animate-pulse"
-                                ></span>
-                                Live
-                            </div> -->
                         </Link>
-
-                        <!-- Quick Vote Action -->
-                        <!-- <button
-                            v-if="artist.status === 'live'"
-                            @click="openVoting(artist)"
-                            class="absolute -bottom-2 -right-2 w-10 h-10 bg-brand-yellow text-black rounded-xl flex items-center justify-center shadow-xl active:scale-90 transition-transform z-10"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="3"
-                                    d="M12 4v16m8-8H4"
-                                />
-                            </svg>
-                        </button> -->
                     </div>
 
-                    <h3 class="font-bold text-lg leading-tight truncate px-1">
+                    <h3
+                        class="font-bold text-base sm:text-lg leading-tight truncate px-1"
+                    >
                         {{ artist.name }}
                     </h3>
-                    <div class="flex items-center justify-between mt-0.5 px-1">
+                    <div class="flex items-center justify-between mt-1 px-1">
                         <p
-                            class="text-brand-yellow text-[10px] font-black uppercase tracking-widest"
+                            class="text-brand-yellow text-[9px] font-black uppercase tracking-widest"
                         >
                             {{ artist.genre }}
                         </p>
                         <p
-                            class="text-gray-500 text-[10px] font-black uppercase tracking-widest italic"
+                            class="text-gray-500 text-[9px] font-black uppercase tracking-widest italic"
                         >
                             {{ artist.scheduled_time }}
                         </p>
                     </div>
+                </div>
+
+                <!-- Empty States -->
+                <div
+                    v-if="displayArtists.length === 0"
+                    class="col-span-2 py-20 text-center glass-card rounded-3xl border-dashed border-white/10"
+                >
+                    <div class="mb-4 text-gray-600">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-12 w-12 mx-auto"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                    </div>
+                    <p
+                        class="text-gray-500 font-bold uppercase tracking-widest text-xs"
+                    >
+                        {{
+                            searchQuery
+                                ? "No matches found"
+                                : activeTab === "upcoming"
+                                  ? "No upcoming artists"
+                                  : "No artists have performed yet"
+                        }}
+                    </p>
                 </div>
             </div>
         </div>
