@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('role') : null,
             ],
+            'flash' => [
+                'is_new_user' => $request->session()->get('is_new_user'),
+            ],
         ];
     }
 }

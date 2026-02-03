@@ -24,7 +24,6 @@ class LoginController extends Controller
     {
         $request->validate([
             'phone' => ['required', 'string', 'regex:/^(?:254|\+254|0)?(7|1)(?:(?:[0-9][0-9])|(?:0[0-8]))[0-9]{6}$/'],
-            'nick_name' => ['nullable', 'string', 'max:20'],
         ]);
 
         $phone = $request->phone;
@@ -38,17 +37,13 @@ class LoginController extends Controller
 
         $fanRole = Role::where('name', 'fan')->first();
 
+        // Find or create the user only with phone
         $user = User::firstOrCreate(
             ['phone' => $phone],
-            [
-                'nick_name' => $request->nick_name,
-                'role_id' => $fanRole->id,
-            ]
+            ['role_id' => $fanRole->id]
         );
 
-        if ($request->filled('nick_name')) {
-            $user->update(['nick_name' => $request->nick_name]);
-        }
+        $isNewUser = $user->wasRecentlyCreated || empty($user->nick_name);
 
         // Generate 5-digit OTP
         $code = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
@@ -62,7 +57,7 @@ class LoginController extends Controller
         // Send SMS via ExpressSMS API
         $this->sendSms($phone, $code);
 
-        return back();
+        return back()->with('is_new_user', $isNewUser);
     }
 
     private function sendSms($phone, $otp)
@@ -100,22 +95,34 @@ class LoginController extends Controller
 
     public function verify(Request $request)
     {
+        // 1. Basic validation
         $request->validate([
             'phone' => ['required', 'string'],
             'otp' => ['required', 'array', 'size:5'],
         ]);
 
+        // 2. Normalize phone to match DB format
         $phone = $request->phone;
         $phone = preg_replace('/\s+/', '', $phone);
         if (str_starts_with($phone, '0')) {
-            $phone = '254' . substr($phone, 1);
+            $normalizedPhone = '254' . substr($phone, 1);
         } elseif (str_starts_with($phone, '+')) {
-            $phone = substr($phone, 1);
+            $normalizedPhone = substr($phone, 1);
+        } else {
+            $normalizedPhone = $phone;
         }
 
-        $otpCode = implode('', $request->otp);
-        $user = User::where('phone', $phone)->firstOrFail();
+        $user = User::where('phone', $normalizedPhone)->firstOrFail();
 
+        // 3. Conditional Nickname Validation (Required only if they don't have one)
+        if (empty($user->nick_name)) {
+            $request->validate([
+                'nick_name' => ['required', 'string', 'min:2', 'max:20'],
+            ]);
+        }
+
+        // 4. OTP Verification
+        $otpCode = implode('', $request->otp);
         $validOtp = Otp::where('user_id', $user->id)
             ->where('code', $otpCode)
             ->where('expires_at', '>', Carbon::now())
@@ -126,8 +133,12 @@ class LoginController extends Controller
             return back()->withErrors(['otp' => 'Invalid or expired OTP.']);
         }
 
-        // Delete the used OTP
+        // 5. Cleanup and Update
         $validOtp->delete();
+
+        if ($request->filled('nick_name')) {
+            $user->update(['nick_name' => $request->nick_name]);
+        }
 
         Auth::login($user, true);
 

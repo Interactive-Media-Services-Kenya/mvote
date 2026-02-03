@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { Head, useForm } from "@inertiajs/vue3";
+import { Head, useForm, usePage } from "@inertiajs/vue3";
 
 const step = ref("IDENTIFY");
 const showCookieConsent = ref(false);
+const isNewUser = ref(false);
+const page = usePage();
 
 const form = useForm({
     phone: "",
@@ -39,6 +41,12 @@ const handleIdentify = () => {
     form.post("/login/identify", {
         onSuccess: () => {
             step.value = "OTP";
+            // Check flash data from the server response
+            if (page.props.flash?.is_new_user) {
+                isNewUser.value = true;
+            } else {
+                isNewUser.value = false;
+            }
         },
     });
 };
@@ -85,7 +93,6 @@ onMounted(() => {
     <div
         class="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden"
     >
-        <!-- Static Background -->
         <div class="absolute inset-0 z-0">
             <div
                 class="absolute inset-0 bg-brand-black/60 z-10 backdrop-blur-[2px]"
@@ -97,7 +104,6 @@ onMounted(() => {
             />
         </div>
 
-        <!-- Logo/Header Area -->
         <div class="mb-12 text-center animate-fade-up relative z-10">
             <h1
                 class="text-5xl font-black italic tracking-tighter text-white uppercase drop-shadow-2xl"
@@ -111,10 +117,8 @@ onMounted(() => {
             </p>
         </div>
 
-        <!-- Flow Container -->
         <div class="w-full max-w-sm relative z-10">
             <Transition name="fade-slide" mode="out-in">
-                <!-- STEP 1: IDENTIFY -->
                 <div
                     v-if="step === 'IDENTIFY'"
                     key="identify"
@@ -146,23 +150,6 @@ onMounted(() => {
                                 {{ form.errors.phone }}
                             </p>
                         </div>
-
-                        <div class="group">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
-                            >
-                                Nickname
-                                <span class="text-[10px] opacity-50 font-normal"
-                                    >(Optional)</span
-                                >
-                            </label>
-                            <input
-                                v-model="form.nick_name"
-                                type="text"
-                                placeholder=""
-                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium"
-                            />
-                        </div>
                     </div>
 
                     <button
@@ -179,7 +166,6 @@ onMounted(() => {
                     </p>
                 </div>
 
-                <!-- STEP 2: OTP -->
                 <div v-else key="otp" class="space-y-8 animate-fade-up">
                     <div class="text-center">
                         <h2 class="text-xl font-bold">Check your phone</h2>
@@ -212,10 +198,43 @@ onMounted(() => {
                         {{ form.errors.otp }}
                     </p>
 
+                    <transition name="fade-up">
+                        <div v-if="isNewUser" class="group animate-fade-up">
+                            <label
+                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
+                                :class="{
+                                    'text-red-500': form.errors.nick_name,
+                                }"
+                            >
+                                What should we call you?
+                            </label>
+                            <input
+                                v-model="form.nick_name"
+                                type="text"
+                                placeholder="Enter your nickname"
+                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all font-medium text-center"
+                                :class="{
+                                    'border-red-500/50 bg-red-500/5':
+                                        form.errors.nick_name,
+                                }"
+                            />
+                            <p
+                                v-if="form.errors.nick_name"
+                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight text-center"
+                            >
+                                {{ form.errors.nick_name }}
+                            </p>
+                        </div>
+                    </transition>
+
                     <div class="space-y-4">
                         <button
                             @click="handleVerify"
-                            :disabled="!isOtpComplete || form.processing"
+                            :disabled="
+                                !isOtpComplete ||
+                                form.processing ||
+                                (isNewUser && !form.nick_name)
+                            "
                             class="w-full bg-white hover:bg-gray-200 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 uppercase tracking-tighter text-xl"
                         >
                             {{
@@ -232,7 +251,6 @@ onMounted(() => {
                     </div>
                 </div>
             </Transition>
-            <!-- Cookie Consent Prompt -->
             <Transition name="fade-up">
                 <div
                     v-if="showCookieConsent"
@@ -289,6 +307,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Same as original style */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
     transition: all 0.3s ease;
