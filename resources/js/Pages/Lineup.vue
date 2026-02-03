@@ -7,6 +7,7 @@ import VotingOverlay from "../Components/VotingOverlay.vue";
 const props = defineProps({
     artists: Array,
     event: Object,
+    userRole: String,
 });
 
 const searchQuery = ref("");
@@ -149,16 +150,23 @@ onUnmounted(() => {
             </div>
 
             <!-- Artist Grid -->
-            <div class="grid grid-cols-2 gap-6">
+            <div
+                class="grid grid-cols-2 gap-6 border-yellow-900/70 p-0.5 border rounded-xl"
+            >
                 <div
                     v-for="artist in filteredArtists"
                     :key="artist.id"
-                    class="group relative"
+                    class="group relative p-3 rounded-2xl transition-all duration-500"
+                    :class="[
+                        artist.status === 'live'
+                            ? 'artist-performing scale-[1.02]'
+                            : 'artist-card-border hover:scale-[1.01]',
+                    ]"
                 >
                     <div class="relative mb-3">
                         <Link
                             :href="`/artist/${artist.id}`"
-                            class="block aspect-square rounded-2xl overflow-hidden shadow-2xl transition-transform duration-500 group-active:scale-95 group-hover:scale-[1.02]"
+                            class="block aspect-square rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-active:scale-95"
                         >
                             <img
                                 :src="artist.image"
@@ -191,7 +199,7 @@ onUnmounted(() => {
                             </div>
 
                             <!-- Live Badge -->
-                            <div
+                            <!-- <div
                                 v-if="artist.status === 'live'"
                                 class="absolute top-3 right-3 bg-red-600 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(220,38,38,0.5)] border border-red-400/20"
                             >
@@ -199,7 +207,7 @@ onUnmounted(() => {
                                     class="w-1 h-1 rounded-full bg-white animate-pulse"
                                 ></span>
                                 Live
-                            </div>
+                            </div> -->
                         </Link>
 
                         <!-- Quick Vote Action -->
@@ -295,6 +303,7 @@ onUnmounted(() => {
             :show="showVoting"
             :artist="activeArtist"
             :questions="event?.questions || []"
+            :isJudge="userRole === 'judge'"
             @close="showVoting = false"
             @submit="null"
         />

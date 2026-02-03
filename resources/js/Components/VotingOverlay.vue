@@ -9,14 +9,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    isJudge: Boolean,
 });
 
 const emit = defineEmits(["close", "submit"]);
 
-const step = ref("QUESTIONS"); // QUESTIONS | COMMENT | SUCCESS | EXPIRED
+const step = ref("QUESTIONS"); // QUESTIONS | SUCCESS | EXPIRED
 const currentQuestionIndex = ref(0);
 const answers = ref({});
-const comment = ref("");
 const isSubmitting = ref(false);
 
 // Timer Logic
@@ -89,7 +89,7 @@ const handleNext = () => {
     if (currentQuestionIndex.value < props.questions.length - 1) {
         currentQuestionIndex.value++;
     } else {
-        step.value = "COMMENT";
+        submitVote();
     }
 };
 
@@ -114,7 +114,6 @@ const submitVote = () => {
             artist_id: props.artist.id,
             performance_id: props.artist.performance_id,
             ratings: answers.value,
-            comment: comment.value,
         },
         {
             onSuccess: () => {
@@ -139,14 +138,12 @@ const close = () => {
         step.value = "QUESTIONS";
         currentQuestionIndex.value = 0;
         answers.value = {};
-        comment.value = "";
     }, 1000);
 };
 
 const progressWidth = computed(() => {
-    if (step.value === "COMMENT") return "100%";
     if (step.value === "SUCCESS") return "100%";
-    const total = props.questions.length + 1;
+    const total = props.questions.length;
     return `${((currentQuestionIndex.value + 1) / total) * 100}%`;
 });
 </script>
@@ -340,68 +337,6 @@ const progressWidth = computed(() => {
                                             Next Question
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- STEP: COMMENT -->
-                            <div
-                                v-else-if="step === 'COMMENT'"
-                                key="comment"
-                                class="space-y-6"
-                            >
-                                <header>
-                                    <p
-                                        class="text-brand-yellow text-xs font-black uppercase tracking-widest mb-2"
-                                    >
-                                        Final Step
-                                    </p>
-                                    <h2
-                                        class="text-2xl font-black italic tracking-tighter text-white"
-                                    >
-                                        Any words for {{ artist.name }}?
-                                    </h2>
-                                </header>
-
-                                <textarea
-                                    v-model="comment"
-                                    placeholder="Tell them why they rocks! (Optional)"
-                                    class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-30 outline-none focus:border-brand-yellow transition-all font-medium text-white resize-none"
-                                    :disabled="isSubmitting || isPaused"
-                                ></textarea>
-
-                                <div
-                                    v-if="isPaused"
-                                    class="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-2xl text-center"
-                                >
-                                    <p
-                                        class="text-yellow-500 font-bold text-[10px] uppercase tracking-widest"
-                                    >
-                                        Submission Paused by Admin
-                                    </p>
-                                </div>
-
-                                <div v-else class="space-y-3">
-                                    <button
-                                        @click="submitVote"
-                                        :disabled="isSubmitting"
-                                        class="w-full bg-brand-yellow text-black font-black py-4 rounded-2xl uppercase tracking-tighter text-lg animate-hype-pulse shadow-[0_0_20px_rgba(255,107,0,0.3)]"
-                                    >
-                                        {{
-                                            isSubmitting
-                                                ? "Summitting..."
-                                                : "Submit Vote"
-                                        }}
-                                    </button>
-                                    <button
-                                        @click="
-                                            step = 'QUESTIONS';
-                                            currentQuestionIndex =
-                                                questions.length - 1;
-                                        "
-                                        class="w-full text-xs font-bold text-gray-500 uppercase tracking-widest"
-                                    >
-                                        Review Ratings
-                                    </button>
                                 </div>
                             </div>
 

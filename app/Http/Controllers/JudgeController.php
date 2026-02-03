@@ -57,6 +57,8 @@ class JudgeController extends Controller
             ]
         );
 
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
         return back();
 
     }

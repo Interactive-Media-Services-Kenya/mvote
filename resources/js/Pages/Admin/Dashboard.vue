@@ -464,7 +464,7 @@ const encodeName = (name) => encodeURIComponent(name);
                             @click="goLive(artist.id)"
                             class="px-4 py-2 bg-brand-yellow text-black text-[9px] font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-all"
                         >
-                            Live
+                            Set live
                         </button>
                     </div>
                     <div

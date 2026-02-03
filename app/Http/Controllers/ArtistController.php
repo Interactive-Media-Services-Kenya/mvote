@@ -50,6 +50,8 @@ class ArtistController extends Controller
         
         Artist::create($validated);
 
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
         return redirect()->back();
     }
 
@@ -75,6 +77,8 @@ class ArtistController extends Controller
 
         $artist->update($validated);
 
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
         return redirect()->back();
     }
 
@@ -86,6 +90,8 @@ class ArtistController extends Controller
         }
 
         $artist->delete();
+
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
 
         return redirect()->back();
     }

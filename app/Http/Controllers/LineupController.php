@@ -40,35 +40,55 @@ class LineupController extends Controller
             ->where('event_id', $event->id)
             ->first();
 
-        $artists = Artist::with('genre')->where('is_active', true)->orderBy('lineup_order')->get()->map(function ($artist) use ($activePerformance, $user) {
-            $isLive = $activePerformance && $activePerformance->artist_id === $artist->id;
+        $artists = Artist::with('genre')
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($artist) use ($activePerformance, $user) {
+                $isLive = $activePerformance && $activePerformance->artist_id === $artist->id;
 
-            $hasVoted = false;
-            if ($isLive && $user) {
-                $hasVoted = Vote::where('user_id', $user->id)
-                    ->where('performance_id', $activePerformance->id)
-                    ->exists();
-            }
+                $hasVoted = false;
+                if ($isLive && $user) {
+                    $hasVoted = Vote::where('user_id', $user->id)
+                        ->where('performance_id', $activePerformance->id)
+                        ->exists();
+                }
 
-            return [
-                'id' => $artist->id,
-                'name' => $artist->name,
-                'genre' => $artist->genre->title ?? 'Unknown',
-                'image' => $artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artist->name),
-                'status' => $isLive ? 'live' : $artist->status,
-                'scheduled_time' => $artist->scheduled_time ? $artist->scheduled_time->format('H:i') : '--:--',
-                'voteCount' => 0,
-                'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
-                'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
-                'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
-                'performance_id' => $isLive ? $activePerformance->id : null,
-                'hasVoted' => $hasVoted,
-            ];
-        });
+                $statusRank = match ($isLive ? 'live' : $artist->status) {
+                    'live' => 1,
+                    'upcoming' => 2,
+                    'closed' => 3,
+                    default => 4,
+                };
+
+                return [
+                    'id' => $artist->id,
+                    'name' => $artist->name,
+                    'genre' => $artist->genre->title ?? 'Unknown',
+                    'image' => $artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($artist->name),
+                    'status' => $isLive ? 'live' : $artist->status,
+                    'status_rank' => $statusRank,
+                    'lineup_order' => $artist->lineup_order,
+                    'scheduled_time' => $artist->scheduled_time ? $artist->scheduled_time->format('H:i') : '--:--',
+                    'voteCount' => 0,
+                    'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
+                    'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
+                    'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
+                    'performance_id' => $isLive ? $activePerformance->id : null,
+                    'hasVoted' => $hasVoted,
+                ];
+            })
+            ->sort(function ($a, $b) {
+                if ($a['status_rank'] === $b['status_rank']) {
+                    return $a['lineup_order'] <=> $b['lineup_order'];
+                }
+                return $a['status_rank'] <=> $b['status_rank'];
+            })
+            ->values();
 
         return Inertia::render('Lineup', [
             'event' => $event,
             'artists' => $artists,
+            'userRole' => $role,
             'activePerformance' => $activePerformance ? [
                 'id' => $activePerformance->id,
                 'artist_id' => $activePerformance->artist_id,

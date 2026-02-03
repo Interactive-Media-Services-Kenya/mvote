@@ -7,6 +7,8 @@ import { router } from "@inertiajs/vue3";
 const props = defineProps({
     artist: Object,
     event: Object,
+    activePerformance: Object,
+    userRole: String,
 });
 
 const showVoting = ref(false);
@@ -300,9 +302,11 @@ const goBack = () => {
 
         <!-- Voting Overlay -->
         <VotingOverlay
+            v-if="artist"
             :show="showVoting"
             :artist="artist"
             :questions="event?.questions || []"
+            :isJudge="userRole === 'judge'"
             @close="showVoting = false"
             @submit="null"
         />

@@ -38,12 +38,17 @@ class QuestionController extends Controller
             );
         }
 
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
         return back()->with('success', 'Metrics synced successfully.');
     }
 
     public function destroy(VotingQuestion $question)
     {
         $question->delete();
+
+        broadcast(new \App\Events\LineupUpdated())->toOthers();
+
         return back()->with('success', 'Metric removed.');
     }
 }
