@@ -1,6 +1,9 @@
 <script setup>
-import { ref, computed } from "vue";
-import { watch, onUnmounted } from "vue";
+import { ref, computed, watch, onUnmounted } from "vue";
+import { usePage, router } from "@inertiajs/vue3";
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 const props = defineProps({
     show: Boolean,
@@ -17,6 +20,7 @@ const emit = defineEmits(["close", "submit"]);
 const step = ref("QUESTIONS"); // QUESTIONS | SUCCESS | EXPIRED
 const currentQuestionIndex = ref(0);
 const answers = ref({});
+const comment = ref("");
 const isSubmitting = ref(false);
 
 // Timer Logic
@@ -32,11 +36,6 @@ const calculateSecondsRemaining = () => {
     const diff = Math.max(0, Math.floor((end - now) / 1000));
 
     secondsRemaining.value = diff;
-
-    if (diff === 0 && step.value !== "SUCCESS" && step.value !== "QUESTIONS") {
-        // Only expire if we are past questions or if specifically needed
-        // Actually, if it's 0, we should probably just show expired if they haven't submitted
-    }
 };
 
 const startTimer = () => {
@@ -103,8 +102,6 @@ const handleRating = (rating) => {
     }, 300);
 };
 
-import { router } from "@inertiajs/vue3";
-
 const submitVote = () => {
     isSubmitting.value = true;
 
@@ -114,6 +111,7 @@ const submitVote = () => {
             artist_id: props.artist.id,
             performance_id: props.artist.performance_id,
             ratings: answers.value,
+            comment: comment.value,
         },
         {
             onSuccess: () => {
@@ -126,7 +124,6 @@ const submitVote = () => {
             },
             onError: () => {
                 isSubmitting.value = false;
-                // Optionally handle error state
             },
         },
     );
@@ -138,13 +135,16 @@ const close = () => {
         step.value = "QUESTIONS";
         currentQuestionIndex.value = 0;
         answers.value = {};
+        comment.value = "";
     }, 1000);
 };
 
 const progressWidth = computed(() => {
     if (step.value === "SUCCESS") return "100%";
     const total = props.questions.length;
-    return `${((currentQuestionIndex.value + 1) / total) * 100}%`;
+    return total > 0
+        ? `${((currentQuestionIndex.value + 1) / total) * 100}%`
+        : "0%";
 });
 </script>
 
@@ -155,16 +155,13 @@ const progressWidth = computed(() => {
                 v-if="show"
                 class="fixed inset-0 z-100 flex items-center justify-center p-6"
             >
-                <!-- Backdrop -->
                 <div
                     class="absolute inset-0 bg-black/90 backdrop-blur-2xl"
                 ></div>
 
-                <!-- Content -->
                 <div
                     class="relative w-full max-w-sm glass-card rounded-[2.5rem] p-8 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/20 animate-fade-up"
                 >
-                    <!-- Progress Bar -->
                     <div
                         class="absolute top-0 left-0 h-1 bg-brand-yellow/20 w-full"
                     >
@@ -174,7 +171,6 @@ const progressWidth = computed(() => {
                         ></div>
                     </div>
 
-                    <!-- Header with Timer -->
                     <div class="flex justify-between items-start mb-6">
                         <div class="flex flex-col">
                             <h3
@@ -236,7 +232,6 @@ const progressWidth = computed(() => {
 
                     <div class="text-center">
                         <Transition name="fade-slide" mode="out-in">
-                            <!-- STEP: QUESTIONS -->
                             <div
                                 v-if="step === 'QUESTIONS' && currentQuestion"
                                 :key="currentQuestionIndex"
@@ -284,9 +279,11 @@ const progressWidth = computed(() => {
                                 </div>
 
                                 <div v-else class="space-y-6">
-                                    <!-- RATING TYPE -->
                                     <div
-                                        v-if="currentQuestion.type === 'rating'"
+                                        v-if="
+                                            currentQuestion.type === 'rate' ||
+                                            currentQuestion.type === 'rating'
+                                        "
                                         class="space-y-6"
                                     >
                                         <div class="flex justify-between gap-2">
@@ -321,12 +318,9 @@ const progressWidth = computed(() => {
                                         </div>
                                     </div>
 
-                                    <!-- TEXT TYPE -->
                                     <div v-else class="space-y-4">
                                         <textarea
-                                            v-model="
-                                                answers[currentQuestion.id]
-                                            "
+                                            v-model="comment"
                                             placeholder="Your answer..."
                                             class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-32 outline-none focus:border-brand-yellow transition-all font-medium text-white resize-none"
                                         ></textarea>
@@ -340,7 +334,6 @@ const progressWidth = computed(() => {
                                 </div>
                             </div>
 
-                            <!-- SUCCESS -->
                             <div
                                 v-else-if="step === 'SUCCESS'"
                                 key="success"
@@ -365,11 +358,13 @@ const progressWidth = computed(() => {
                                 <h2
                                     class="text-3xl font-black italic tracking-tighter"
                                 >
-                                    Energy Sent!
+                                    Rating Submitted!
                                 </h2>
                                 <p class="text-gray-400 font-medium mb-6">
-                                    Your ratings for {{ artist.name }} have been
-                                    cast.
+                                    Thank you for your rating,
+                                    {{ user?.nick_name || "Voter" }}! Your
+                                    feedback for {{ artist.name }} has been
+                                    recorded.
                                 </p>
                                 <button
                                     @click="close"
@@ -379,7 +374,6 @@ const progressWidth = computed(() => {
                                 </button>
                             </div>
 
-                            <!-- EXPIRED -->
                             <div
                                 v-else-if="step === 'EXPIRED'"
                                 key="expired"

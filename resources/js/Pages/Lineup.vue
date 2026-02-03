@@ -18,18 +18,30 @@ const timeRemaining = ref("");
 const isTimerActive = ref(false);
 let timerInterval = null;
 
+const liveArtist = computed(() =>
+    (props.artists || []).find((a) => a.status === "live"),
+);
+
 const featuredArtist = computed(() => {
     // 1. Give priority to Live artist
     if (liveArtist.value) return liveArtist.value;
 
     // 2. Otherwise provide the first upcoming artist
-    const upcoming = (props.artists || []).find((a) => a.status === "upcoming");
-    return upcoming || null;
+    const inLine = (props.artists || []).filter((a) => a.status === "upcoming");
+    return inLine[0] || null;
 });
 
-const liveArtist = computed(() =>
-    (props.artists || []).find((a) => a.status === "live"),
-);
+const nextInLine = computed(() => {
+    const inLine = (props.artists || []).filter((a) => a.status === "upcoming");
+
+    // If featured is the LIVE artist, nextInLine is the first person in line
+    if (liveArtist.value) {
+        return inLine[0] || null;
+    }
+
+    // If featured is the NEXT artist (no one live), nextInLine is the second person in line
+    return inLine[1] || null;
+});
 
 const filteredArtistsBySearch = computed(() => {
     if (!searchQuery.value) return props.artists || [];
@@ -188,7 +200,7 @@ onUnmounted(() => {
                             : 'text-gray-500 hover:text-white'
                     "
                 >
-                    Lined Up
+                    On Deck
                     <div
                         v-if="activeTab === 'upcoming'"
                         class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow shadow-[0_0_10px_#ffcd00]"
@@ -219,7 +231,7 @@ onUnmounted(() => {
                     class="col-span-2 mb-2 animate-fade-up"
                 >
                     <div
-                        class="relative group rounded-3xl overflow-hidden border border-white/10 glass-card h-[180px] sm:h-[220px]"
+                        class="relative group rounded-3xl overflow-hidden border border-white/10 glass-card h-45 sm:h-55"
                         :class="{
                             'artist-performing':
                                 featuredArtist.status === 'live',
@@ -259,7 +271,7 @@ onUnmounted(() => {
                                     }}
                                 </p>
                                 <h3
-                                    class="text-2xl sm:text-4xl font-black italic tracking-tighter uppercase leading-none mb-3 sm:mb-4 truncate max-w-[200px] sm:max-w-md"
+                                    class="text-2xl sm:text-4xl font-black italic tracking-tighter uppercase leading-none mb-3 sm:mb-4 truncate max-w-50 sm:max-w-md"
                                 >
                                     {{ featuredArtist.name }}
                                 </h3>
@@ -280,8 +292,14 @@ onUnmounted(() => {
                                         @click="openVoting(featuredArtist)"
                                         class="inline-flex items-center justify-center bg-brand-yellow text-black font-black py-2.5 px-4 sm:px-6 rounded-xl uppercase text-[9px] sm:text-[10px] tracking-widest hover:scale-105 transition-all w-max shadow-[0_0_20px_rgba(255,205,0,0.4)]"
                                     >
-                                        Vote Now {{ timeRemaining }}
+                                        Rate Now {{ timeRemaining }}
                                     </button>
+                                    <div
+                                        v-else-if="featuredArtist.hasVoted"
+                                        class="inline-flex items-center justify-center bg-green-600/20 text-green-500 font-black py-2.5 px-4 sm:px-6 rounded-xl uppercase text-[9px] sm:text-[10px] tracking-widest border border-green-500/30 w-max"
+                                    >
+                                        Rated
+                                    </div>
                                 </div>
                             </div>
 
@@ -350,7 +368,7 @@ onUnmounted(() => {
                                     <span
                                         class="w-1 h-1 rounded-full bg-green-500"
                                     ></span>
-                                    <span class="text-green-500">Voted</span>
+                                    <span class="text-green-500">Rated</span>
                                 </div>
                                 <div
                                     v-else-if="artist.status === 'upcoming'"
@@ -409,58 +427,74 @@ onUnmounted(() => {
                             searchQuery
                                 ? "No matches found"
                                 : activeTab === "upcoming"
-                                  ? "No upcoming artists"
-                                  : "No artists have performed yet"
+                                  ? "No more artists on deck"
+                                  : "No history available yet"
                         }}
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Global Floating Action -->
         <div
-            class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[80%] max-w-xs z-40"
+            class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-40"
         >
-            <button
-                v-if="liveArtist"
-                @click="
-                    liveArtist.voting_started_at && !liveArtist.hasVoted
-                        ? openVoting(liveArtist)
-                        : null
-                "
-                :class="[
-                    'w-full py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-white',
-                    liveArtist.hasVoted
-                        ? 'bg-green-600'
-                        : liveArtist.voting_started_at
-                          ? 'bg-brand-yellow'
-                          : 'bg-red-600/90',
-                ]"
-                :disabled="liveArtist.hasVoted"
+            <div v-if="liveArtist" class="flex flex-col gap-2">
+                <button
+                    v-if="!liveArtist.hasVoted && liveArtist.voting_started_at"
+                    @click="openVoting(liveArtist)"
+                    class="w-full py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,107,0,0.4)] active:scale-95 transition-all text-black bg-brand-yellow"
+                >
+                    <span
+                        class="w-2 h-2 rounded-full bg-black animate-pulse"
+                    ></span>
+                    Rate: {{ liveArtist.name }}{{ timeRemaining }}
+                </button>
+
+                <div
+                    v-if="nextInLine"
+                    class="glass-card px-6 py-3 rounded-full border border-white/10 flex items-center justify-between backdrop-blur-3xl shadow-2xl"
+                >
+                    <div class="flex flex-col">
+                        <span
+                            class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
+                            >Incoming</span
+                        >
+                        <span
+                            class="text-[10px] font-black italic uppercase tracking-tighter"
+                            >{{ nextInLine.name }}</span
+                        >
+                    </div>
+                    <div
+                        class="px-2 py-1 rounded-lg bg-white/5 border border-white/5 text-[8px] font-bold text-gray-400 uppercase"
+                    >
+                        Scheduled
+                    </div>
+                </div>
+            </div>
+
+            <div
+                v-else-if="nextInLine"
+                class="glass-card px-6 py-4 rounded-full border border-white/10 flex items-center justify-between backdrop-blur shadow-2xl"
             >
-                <span
-                    v-if="!liveArtist.hasVoted"
-                    class="w-2 h-2 rounded-full bg-white"
-                    :class="{
-                        'animate-pulse':
-                            liveArtist.voting_started_at &&
-                            !liveArtist.is_voting_paused,
-                    }"
-                ></span>
-                <span v-if="liveArtist.hasVoted">
-                    Voted for {{ liveArtist.name }}
-                </span>
-                <span v-else-if="liveArtist.voting_started_at">
-                    Vote: {{ liveArtist.name }}{{ timeRemaining }}
-                </span>
-                <span v-else> Performing: {{ liveArtist.name }} </span>
-            </button>
-            <button
-                v-else
-                class="w-full glass-card py-4 rounded-full font-black uppercase tracking-tighter text-sm flex items-center justify-center gap-2 border-white/20 shadow-2xl opacity-80"
-            >
-                Voting opens soon
-            </button>
+                <div class="flex flex-col">
+                    <span
+                        class="text-[8px] font-black uppercase text-white tracking-widest"
+                        >Next to Stage</span
+                    >
+                    <span
+                        class="text-xs font-black italic uppercase tracking-tighter text-brand-yellow"
+                        >{{ nextInLine.name }}</span
+                    >
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[9px] font-black italic text-white">{{
+                        nextInLine.scheduled_time
+                    }}</span>
+                    <div
+                        class="w-1.5 h-1.5 rounded-full bg-brand-yellow/50"
+                    ></div>
+                </div>
+            </div>
         </div>
 
         <VotingOverlay

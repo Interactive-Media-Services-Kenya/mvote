@@ -181,7 +181,7 @@ onUnmounted(() => {
                     >
                         <span
                             class="text-[10px] font-black uppercase tracking-widest mb-1 opacity-50"
-                            >Voting Closes In</span
+                            >Rating Closes In</span
                         >
                         <span
                             class="text-6xl font-black italic tabular-nums leading-none tracking-tighter"
@@ -244,7 +244,7 @@ onUnmounted(() => {
                                 <p
                                     class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4"
                                 >
-                                    Fan Votes
+                                    Audience Ratings
                                 </p>
                                 <span
                                     class="text-6xl font-black italic tabular-nums"
@@ -257,7 +257,7 @@ onUnmounted(() => {
                                 <p
                                     class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4"
                                 >
-                                    Judge Votes
+                                    Judges' Ratings
                                 </p>
                                 <span
                                     class="text-6xl font-black italic tabular-nums"
@@ -278,7 +278,7 @@ onUnmounted(() => {
                                 <h4
                                     class="text-2xl font-black italic uppercase tracking-tight leading-none"
                                 >
-                                    Verified Voters
+                                    Total Ratings
                                 </h4>
                             </div>
                             <span

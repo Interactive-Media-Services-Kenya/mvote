@@ -208,10 +208,10 @@ const goBack = () => {
                     >
                         {{
                             artist.hasVoted
-                                ? "Voted"
+                                ? "Rated"
                                 : isLive
                                   ? artist.voting_started_at
-                                      ? `Vote Now ${timeRemaining}`
+                                      ? `Rate Now ${timeRemaining}`
                                       : "Performing Now"
                                   : "Follow"
                         }}

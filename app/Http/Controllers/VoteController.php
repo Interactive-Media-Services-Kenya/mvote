@@ -22,7 +22,7 @@ class VoteController extends Controller
         $performance = Performance::findOrFail($request->performance_id);
 
         if ($performance->status !== 'live') {
-            return back()->with('error', 'Voting session is closed.');
+            return back()->with('error', 'Rating session is closed.');
         }
 
         // Check if user has already voted for this performance
@@ -31,7 +31,7 @@ class VoteController extends Controller
             ->exists();
 
         if ($existingVote) {
-            return back()->with('error', 'You have already voted for this performance.');
+            return back()->with('error', 'You have already rated this performance.');
         }
 
         $role = $user->role->name ?? 'fan';
@@ -69,6 +69,6 @@ class VoteController extends Controller
 
         \App\Events\PerformanceUpdated::dispatch($performance, 'New vote cast');
 
-        return back()->with('success', 'Vote submitted successfully!');
+        return back()->with('success', 'Rating submitted successfully!');
     }
 }

@@ -74,7 +74,7 @@ class DashboardController extends Controller
         // Fetch some basic stats
         $stats = [
             [
-                'label' => 'Total Voters',
+                'label' => 'Total Participants',
                 'value' => number_format(Vote::distinct('user_id')->count('user_id')),
                 'trend' => '+0%', 
                 'color' => 'text-brand-yellow',

@@ -301,7 +301,7 @@ const encodeName = (name) => encodeURIComponent(name);
                                 >
                                 <span
                                     class="text-[8px] font-bold uppercase text-gray-500"
-                                    >Fans</span
+                                    >Audience</span
                                 >
                             </div>
                             <div
@@ -372,7 +372,7 @@ const encodeName = (name) => encodeURIComponent(name);
                                     @click="openVoting"
                                     class="w-full bg-brand-yellow text-black font-black py-4 rounded-xl uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse mb-2"
                                 >
-                                    Open Voting Window
+                                    Open Rating Window
                                 </button>
                                 <button
                                     @click="endPerformance"
@@ -416,7 +416,7 @@ const encodeName = (name) => encodeURIComponent(name);
                                 : 'text-gray-500 hover:text-white'
                         "
                     >
-                        Lined Up
+                        On Deck
                         <div
                             v-if="activeTab === 'upcoming'"
                             class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow"
@@ -497,7 +497,7 @@ const encodeName = (name) => encodeURIComponent(name);
                                     >
                                     <span
                                         class="text-[7px] font-bold uppercase text-gray-500"
-                                        >Fans</span
+                                        >Audience</span
                                     >
                                 </div>
                                 <div
