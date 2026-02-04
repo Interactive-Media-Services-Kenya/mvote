@@ -218,7 +218,7 @@ const goBack = () => {
                                 }}</span
                             >
                         </div>
-                        <div
+                        <!-- <div
                             v-if="artist.globalRating"
                             class="glass-card px-6 py-3 rounded-2xl border-white/10 flex-1 flex flex-col justify-center"
                         >
@@ -231,7 +231,7 @@ const goBack = () => {
                                     artist.globalRating.max_points
                                 }}</span
                             >
-                        </div>
+                        </div> -->
                     </div>
                     <button
                         v-else
