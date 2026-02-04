@@ -66,6 +66,11 @@ class RankingService
     {
         $rankings = $this->getEventRankings($performance->event_id);
         $result = $rankings->firstWhere('performance_id', $performance->id);
+
         return $result ? round($result->bias_rating, 2) : 0;
     }
+
+    // public function rawSQL(){
+    //     $sql =
+    // }
 }

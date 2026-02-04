@@ -66,43 +66,13 @@ class Performance extends Model
 
     public function getGlobalRatingData()
     {
-        $votes = $this->votes()
-            ->with(['user.role', 'question' => function($q) {
-                $q->where('type', 'rating');
-            }])
-            ->get()
-            ->filter(function($vote) {
-                return $vote->question && $vote->question->type === 'rating';
-            });
-
-        if ($votes->isEmpty()) {
-            return [
-                'average_points' => 0,
-                'max_points' => 0,
-                'average_percentage' => 0
-            ];
-        }
-
-        // We need to calculate the average points across all users.
-        // Each user has a different "max points" if they are a judge vs a fan (though usually they are the same for rating questions).
-        
-        $userScores = $votes->groupBy('user_id')->map(function ($userVotes) {
-            $user = $userVotes->first()->user;
-            return [
-                'points' => $userVotes->sum('rating'),
-                'max' => $this->maxPossiblePoints($user)
-            ];
-        });
-
-        $totalPoints = $userScores->sum('points');
-        $totalMaxPoints = $userScores->sum('max');
-        $avgPoints = $userScores->avg('points');
-        $avgMax = $userScores->avg('max');
+        $score = app(\App\Services\RankingService::class)->getPerformanceScore($this);
+        $max = $this->getEventMaxPoints();
 
         return [
-            'average_points' => round($avgPoints, 1),
-            'max_points' => round($avgMax, 1),
-            'average_percentage' => $totalMaxPoints > 0 ? round(($totalPoints / $totalMaxPoints) * 100, 1) : 0
+            'average_points' => $score,
+            'max_points' => $max,
+            'average_percentage' => $max > 0 ? round(($score / $max) * 100, 1) : 0
         ];
     }
 

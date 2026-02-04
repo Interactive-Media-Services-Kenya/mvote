@@ -11,29 +11,38 @@ use Inertia\Inertia;
 class DashboardController extends Controller
 {
     protected $rankingService;
-    
+
     public function __construct(\App\Services\RankingService $rankingService)
     {
+        // print_r($rankingService);
+        // exit;
         $this->rankingService = $rankingService;
     }
 
     public function index()
     {
         $event = \App\Models\Event::where('is_active', true)->latest()->first();
-        $rankings = $event ? $this->rankingService->getEventRankings($event->id) : collect();
+        $rankings = $event ? $this->rankingService->rawSQL($event->id) : collect();
+
+        // print ("<pre>");
+        print_r($rankings);
+        exit;
 
         $activePerformance = Performance::with('artist.genre')
             ->where('status', 'live')
             ->first();
-        
-        $upcomingArtists = Artist::with(['genre', 'performances' => function($query) {
+
+        $upcomingArtists = Artist::with([
+            'genre',
+            'performances' => function ($query) {
                 $query->latest();
-            }])
+            }
+        ])
             ->where('is_active', true)
             ->where('status', '!=', 'live')
             ->orderBy('lineup_order')
             ->get()
-            ->map(function($artist) use ($rankings) {
+            ->map(function ($artist) use ($rankings) {
                 $performance = $artist->performances->first();
                 $voteCount = 0;
                 $finalScore = 0;
@@ -54,7 +63,6 @@ class DashboardController extends Controller
                     'performance_id' => $performance?->id,
                     'vote_count' => $voteCount,
                     'final_score' => number_format($finalScore, 1),
-                    'ratio' => number_format($ratio, 1),
                     'avg_max' => number_format($performance ? $performance->getEventMaxPoints() : 75, 1),
                 ];
             });
@@ -71,7 +79,6 @@ class DashboardController extends Controller
             'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $activePerformance->is_voting_paused,
             'final_score' => number_format($liveScoreData?->bias_rating ?? 0, 1),
-            'ratio' => number_format($liveScoreData?->ratio ?? 0, 1),
             'avg_max' => number_format($activePerformance->getEventMaxPoints(), 1),
             'vote_count' => Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id'),
         ] : null;
@@ -81,7 +88,7 @@ class DashboardController extends Controller
             [
                 'label' => 'Total Participants',
                 'value' => number_format(Vote::distinct('user_id')->count('user_id')),
-                'trend' => '+0%', 
+                'trend' => '+0%',
                 'color' => 'text-brand-yellow',
             ],
             [
@@ -91,7 +98,7 @@ class DashboardController extends Controller
                     ->join('roles', 'users.role_id', '=', 'roles.id')
                     ->where('roles.name', 'fan')
                     ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
-                    ->count()), 
+                    ->count()),
                 'trend' => 'Live',
                 'color' => 'text-green-500',
             ],
@@ -102,14 +109,14 @@ class DashboardController extends Controller
                     ->join('roles', 'users.role_id', '=', 'roles.id')
                     ->where('roles.name', 'judge')
                     ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
-                    ->count()), 
+                    ->count()),
                 'trend' => 'Real-time',
                 'color' => 'text-blue-500',
             ],
             [
-                'label' => 'Avg Rating',
-                'value' => $activePerformance ? number_format($activePerformance->average_score, 1) : '0.0', 
-                'trend' => 'Stars',
+                'label' => 'Bias Rating',
+                'value' => $activePerformance ? number_format($activePerformance->average_score, 1) : '0.0',
+                'trend' => 'Calculated',
                 'color' => 'text-white'
             ],
         ];

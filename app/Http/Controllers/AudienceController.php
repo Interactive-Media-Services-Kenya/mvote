@@ -49,9 +49,7 @@ class AudienceController extends Controller
                 'artist_image' => $activePerformance->artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($activePerformance->artist->name),
                 'genre' => $activePerformance->artist->genre->title ?? 'Unknown',
                 'voteCount' => $voteCount,
-                'avgRating' => number_format($activePerformance->average_score, 1),
                 'finalScore' => number_format($scoreData?->bias_rating ?? 0, 1),
-                'ratio' => number_format($scoreData?->ratio ?? 0, 1),
                 'avgMax' => number_format($activePerformance->getEventMaxPoints(), 1),
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
@@ -69,7 +67,6 @@ class AudienceController extends Controller
                     'id' => $performance->artist_id,
                     'name' => $performance->artist->name,
                     'score' => $scoreData ? round($scoreData->bias_rating, 1) : 0,
-                    'ratio' => $scoreData ? round($scoreData->ratio, 1) : 0,
                     'image' => $performance->artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($performance->artist->name),
                 ];
             })

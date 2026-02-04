@@ -41,7 +41,7 @@ class LineupController extends Controller
             ->first();
 
         $allPerformances = Performance::where('event_id', $event->id)->get();
-        $userVotedPerformanceIds = $user 
+        $userVotedPerformanceIds = $user
             ? Vote::where('user_id', $user->id)
                 ->whereIn('performance_id', $allPerformances->pluck('id'))
                 ->distinct()
@@ -53,6 +53,7 @@ class LineupController extends Controller
 
         $artists = Artist::with('genre')
             ->where('is_active', true)
+            ->orderBy('lineup_order', 'desc')
             ->get()
             ->map(function ($artist) use ($activePerformance, $user, $allPerformances, $userVotedPerformanceIds) {
                 $performance = $allPerformances->where('artist_id', $artist->id)->first();
@@ -78,10 +79,10 @@ class LineupController extends Controller
                 };
 
                 $isPerforming = $isLive;
-                $isVotingOpen = $isLive && 
-                                $activePerformance->voting_started_at && 
-                                ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
-                                !$activePerformance->is_voting_paused;
+                $isVotingOpen = $isLive &&
+                    $activePerformance->voting_started_at &&
+                    ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) &&
+                    !$activePerformance->is_voting_paused;
 
                 return [
                     'id' => $artist->id,
@@ -122,9 +123,9 @@ class LineupController extends Controller
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
                 'is_performing' => true,
-                'is_voting_open' => $activePerformance->voting_started_at && 
-                                    ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
-                                    !$activePerformance->is_voting_paused,
+                'is_voting_open' => $activePerformance->voting_started_at &&
+                    ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) &&
+                    !$activePerformance->is_voting_paused,
                 'voterRating' => ($hasVotedActive) ? [
                     'points' => $activePerformance->userRatedPoints($user),
                     'max' => $activePerformance->maxPossiblePoints($user)
@@ -155,9 +156,12 @@ class LineupController extends Controller
                 }
             ]);
         }
-        $artistModel = Artist::with(['genre', 'discography' => function($q) {
-            $q->orderBy('release_year', 'desc');
-        }])->findOrFail($id);
+        $artistModel = Artist::with([
+            'genre',
+            'discography' => function ($q) {
+                $q->orderBy('release_year', 'desc');
+            }
+        ])->findOrFail($id);
 
         $activePerformance = Performance::where('status', 'live')
             ->where('event_id', $event->id)
@@ -183,10 +187,10 @@ class LineupController extends Controller
         }
 
         $isPerforming = $isLive;
-        $isVotingOpen = $isLive && 
-                        $activePerformance->voting_started_at && 
-                        ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) && 
-                        !$activePerformance->is_voting_paused;
+        $isVotingOpen = $isLive &&
+            $activePerformance->voting_started_at &&
+            ($activePerformance->voting_ends_at === null || $activePerformance->voting_ends_at->isFuture()) &&
+            !$activePerformance->is_voting_paused;
 
         $artist = [
             'id' => $artistModel->id,
@@ -198,7 +202,7 @@ class LineupController extends Controller
             'is_performing' => $isPerforming,
             'is_voting_open' => $isVotingOpen,
             'scheduledTime' => $artistModel->scheduled_time ? $artistModel->scheduled_time->format('H:i') : '--:--',
-            'discography' => $artistModel->discography->map(function($item) {
+            'discography' => $artistModel->discography->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'title' => $item->title,
