@@ -164,6 +164,14 @@ const localVoterRating = computed(() => {
 
     return { points, max };
 });
+
+const canSubmit = computed(() => {
+    return (
+        !isPaused.value &&
+        secondsRemaining.value > 0 &&
+        step.value === "QUESTIONS"
+    );
+});
 </script>
 
 <template>
@@ -308,14 +316,24 @@ const localVoterRating = computed(() => {
                                             <button
                                                 v-for="i in 5"
                                                 :key="i"
-                                                @click="handleRating(i)"
+                                                @click="
+                                                    canSubmit
+                                                        ? handleRating(i)
+                                                        : null
+                                                "
+                                                :disabled="!canSubmit"
                                                 :class="[
-                                                    'w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black transition-all active:scale-90',
+                                                    'w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black transition-all',
+                                                    !canSubmit
+                                                        ? 'opacity-40 cursor-not-allowed bg-brand-gray text-gray-600'
+                                                        : 'active:scale-90',
                                                     answers[
                                                         currentQuestion.id
                                                     ] === i
                                                         ? 'bg-brand-yellow text-black scale-110 shadow-[0_0_15px_rgba(255,107,0,0.5)]'
-                                                        : 'bg-brand-gray text-gray-400 border border-white/5',
+                                                        : canSubmit
+                                                          ? 'bg-brand-gray text-gray-400 border border-white/5'
+                                                          : '',
                                                 ]"
                                             >
                                                 {{ i }}
@@ -343,10 +361,25 @@ const localVoterRating = computed(() => {
                                             class="w-full bg-brand-gray border border-white/10 rounded-2xl p-4 min-h-32 outline-none focus:border-brand-yellow transition-all font-medium text-white resize-none"
                                         ></textarea>
                                         <button
-                                            @click="handleNext"
-                                            class="w-full bg-brand-yellow text-black font-black py-4 rounded-xl uppercase tracking-tighter text-sm flex items-center justify-center gap-2"
+                                            @click="
+                                                canSubmit ? handleNext() : null
+                                            "
+                                            :disabled="!canSubmit"
+                                            class="w-full bg-brand-yellow text-black font-black py-4 rounded-xl uppercase tracking-tighter text-sm flex items-center justify-center gap-2 transition-all"
+                                            :class="
+                                                !canSubmit
+                                                    ? 'opacity-40 cursor-not-allowed'
+                                                    : 'active:scale-95'
+                                            "
                                         >
-                                            Next Question
+                                            {{
+                                                isSubmitting
+                                                    ? "Submitting..."
+                                                    : currentQuestionIndex <
+                                                        questions.length - 1
+                                                      ? "Next Question"
+                                                      : "Finish Voting"
+                                            }}
                                         </button>
                                     </div>
                                 </div>
