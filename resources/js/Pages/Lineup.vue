@@ -11,7 +11,7 @@ const props = defineProps({
 });
 
 const searchQuery = ref("");
-const activeTab = ref("upcoming"); // 'upcoming' or 'closed'
+const activeTab = ref("upcoming");
 const showVoting = ref(false);
 const activeArtist = ref(null);
 const timeRemaining = ref("");
@@ -69,9 +69,9 @@ const displayArtists = computed(() => {
 });
 
 const carouselImages = [
-    "/assets/tusker_1.png",
-    "/assets/tusker_2.png",
-    "/assets/tusker_3.png",
+    "/assets/tusker_1.avif",
+    "/assets/tusker_2.avif",
+    "/assets/tusker_3.avif",
 ];
 const currentSlide = ref(0);
 let autoPlayInterval = null;
@@ -280,7 +280,9 @@ onUnmounted(() => {
                                         class="text-brand-yellow text-[9px] font-black uppercase mb-1"
                                         >{{
                                             featuredArtist.status === "live"
-                                                ? "Performing Now"
+                                                ? featuredArtist.is_voting_open
+                                                    ? "Rating Open"
+                                                    : "On Stage"
                                                 : "Next Up"
                                         }}</span
                                     >
@@ -289,23 +291,38 @@ onUnmounted(() => {
                                     >
                                         {{ featuredArtist.name }}
                                     </h3>
-                                    <div class="flex gap-2">
+                                    <div class="flex flex-col gap-2">
                                         <Link
                                             :href="`/artist/${featuredArtist.id}`"
-                                            class="bg-white/10 border border-white/10 text-[9px] font-black uppercase px-5 py-2.5 rounded-lg"
+                                            class="bg-white/10 border border-white/10 text-[9px] font-black text-center uppercase px-5 py-2.5 rounded-lg"
                                             >Profile</Link
                                         >
                                         <button
                                             v-if="
                                                 featuredArtist.status ===
                                                     'live' &&
+                                                featuredArtist.is_voting_open &&
                                                 !featuredArtist.hasVoted
                                             "
                                             @click="openVoting(featuredArtist)"
-                                            class="bg-brand-yellow text-black text-[9px] font-black uppercase px-5 py-2.5 rounded-lg"
+                                            class="bg-brand-yellow text-black text-[9px] font-black uppercase px-5 py-2.5 rounded-lg shadow-lg active:scale-95 transition-all"
                                         >
-                                            Vote Now
+                                            Rate Now
                                         </button>
+                                        <div
+                                            v-else-if="
+                                                featuredArtist.status ===
+                                                    'live' &&
+                                                !featuredArtist.is_voting_open &&
+                                                !featuredArtist.hasVoted
+                                            "
+                                            class="bg-white/5 border border-white/10 text-white/50 text-[9px] font-black uppercase px-5 py-2.5 rounded-lg flex items-center gap-2"
+                                        >
+                                            <div
+                                                class="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-pulse"
+                                            ></div>
+                                            Wait for Rating
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="w-2/5 h-full relative">
@@ -363,22 +380,33 @@ onUnmounted(() => {
         >
             <button
                 v-if="liveArtist"
-                @click="!liveArtist.hasVoted ? openVoting(liveArtist) : null"
+                @click="
+                    !liveArtist.hasVoted && liveArtist.is_voting_open
+                        ? openVoting(liveArtist)
+                        : null
+                "
                 class="w-full py-4 rounded-full font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 transition-all shadow-2xl"
-                :class="
+                :class="[
                     liveArtist.hasVoted
                         ? 'bg-green-600 text-white'
-                        : 'bg-brand-yellow text-black'
-                "
+                        : liveArtist.is_voting_open
+                          ? 'bg-brand-yellow text-black shadow-brand-yellow/20'
+                          : 'bg-white/10 text-white/40 border border-white/10 cursor-default',
+                    !liveArtist.hasVoted && liveArtist.is_voting_open
+                        ? 'active:scale-95'
+                        : '',
+                ]"
             >
                 <div
-                    v-if="!liveArtist.hasVoted"
+                    v-if="!liveArtist.hasVoted && liveArtist.is_voting_open"
                     class="w-2 h-2 rounded-full bg-black animate-pulse"
                 ></div>
                 <span>{{
                     liveArtist.hasVoted
                         ? "Voted for " + liveArtist.name
-                        : "Vote: " + liveArtist.name + timeRemaining
+                        : liveArtist.is_voting_open
+                          ? "Rate: " + liveArtist.name + timeRemaining
+                          : "Wait for Rating: " + liveArtist.name
                 }}</span>
             </button>
         </div>

@@ -2,10 +2,13 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, useForm, usePage } from "@inertiajs/vue3";
 
-const step = ref("IDENTIFY");
+const step = ref("AGE_GATE");
 const showCookieConsent = ref(false);
 const isNewUser = ref(false);
 const page = usePage();
+
+const resendCooldown = ref(0);
+let cooldownTimer = null;
 
 const form = useForm({
     phone: "",
@@ -38,9 +41,12 @@ const handleIdentify = () => {
         return;
     }
 
+    if (resendCooldown.value > 0) return;
+
     form.post("/login/identify", {
         onSuccess: () => {
             step.value = "OTP";
+            startResendCooldown();
             // Check flash data from the server response
             if (page.props.flash?.is_new_user) {
                 isNewUser.value = true;
@@ -75,15 +81,30 @@ const handleVerify = () => {
 
     form.post("/login/verify", {
         onError: () => {
-            form.otp = ["", "", "", "", ""];
+            // Keep OTP values for easier correction
         },
     });
 };
 
+const startResendCooldown = () => {
+    resendCooldown.value = 60;
+    cooldownTimer = setInterval(() => {
+        resendCooldown.value--;
+        if (resendCooldown.value <= 0) {
+            clearInterval(cooldownTimer);
+        }
+    }, 1000);
+};
+
+const handleResendOtp = () => {
+    if (resendCooldown.value > 0) return;
+    handleIdentify();
+};
+
 const images = [
-    "/assets/carousel_1.png",
-    "/assets/carousel_2.png",
-    "/assets/carousel_3.png",
+    "/assets/carousel_1.avif",
+    "/assets/carousel_2.avif",
+    "/assets/carousel_3.avif",
 ];
 const currentImageIndex = ref(0);
 let timer = null;
@@ -97,6 +118,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (timer) clearInterval(timer);
+    if (cooldownTimer) clearInterval(cooldownTimer);
 });
 </script>
 
@@ -176,7 +198,51 @@ onUnmounted(() => {
 
             <Transition name="fade-slide" mode="out-in">
                 <div
-                    v-if="step === 'IDENTIFY'"
+                    v-if="step === 'AGE_GATE'"
+                    key="age-gate"
+                    class="space-y-8 animate-fade-up"
+                >
+                    <div class="text-center">
+                        <div
+                            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-yellow/10 border border-brand-yellow/20 mb-6"
+                        >
+                            <span
+                                class="text-2xl font-black text-brand-yellow italic"
+                                >18+</span
+                            >
+                        </div>
+                        <h2
+                            class="text-3xl font-black text-white italic tracking-tighter uppercase leading-none mb-4"
+                        >
+                            Age Verification
+                        </h2>
+                        <p
+                            class="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed"
+                        >
+                            This platform contains content intended for adults.
+                            Please confirm you are of legal age to continue.
+                        </p>
+                    </div>
+
+                    <button
+                        @click="step = 'IDENTIFY'"
+                        class="w-full bg-linear-to-r from-brand-yellow to-yellow-600 text-black font-black py-5 rounded-full transition-all active:scale-[0.98] shadow-xl group overflow-hidden"
+                    >
+                        <span class="uppercase tracking-tighter text-lg"
+                            >I am 18 or older</span
+                        >
+                    </button>
+
+                    <p
+                        class="text-center text-[9px] text-gray-600 uppercase tracking-[0.2em]"
+                    >
+                        By proceeding, you agree to our Terms of Service &
+                        Privacy Policy
+                    </p>
+                </div>
+
+                <div
+                    v-else-if="step === 'IDENTIFY'"
                     key="identify"
                     class="space-y-6"
                 >
@@ -223,12 +289,6 @@ onUnmounted(() => {
                             />
                         </svg>
                     </button>
-
-                    <p
-                        class="text-center text-[10px] text-gray-500 uppercase tracking-widest pt-4"
-                    >
-                        Press Enter to continue
-                    </p>
                 </div>
 
                 <div v-else key="otp" class="space-y-8 animate-fade-up">
@@ -305,17 +365,38 @@ onUnmounted(() => {
                         <button
                             @click="handleVerify"
                             :disabled="!isOtpComplete || form.processing"
-                            class="w-full bg-white text-black font-black py-4 rounded-full transition-all active:scale-95 uppercase tracking-widest text-sm shadow-lg"
+                            class="w-full bg-white text-black font-black py-4 rounded-full transition-all active:scale-95 uppercase tracking-widest text-sm shadow-lg mb-4"
                         >
                             Enter Arena
                         </button>
 
-                        <button
-                            @click="step = 'IDENTIFY'"
-                            class="w-full text-gray-500 font-bold py-2 hover:text-white transition-colors uppercase text-[10px] tracking-widest"
-                        >
-                            Change Phone Number
-                        </button>
+                        <div class="flex flex-col items-center gap-4">
+                            <button
+                                @click="handleResendOtp"
+                                :disabled="
+                                    resendCooldown > 0 || form.processing
+                                "
+                                class="text-[10px] font-black uppercase tracking-widest transition-colors"
+                                :class="
+                                    resendCooldown > 0
+                                        ? 'text-gray-600'
+                                        : 'text-brand-yellow hover:text-white'
+                                "
+                            >
+                                {{
+                                    resendCooldown > 0
+                                        ? `Resend Code in ${resendCooldown}s`
+                                        : "Resend Code"
+                                }}
+                            </button>
+
+                            <button
+                                @click="step = 'IDENTIFY'"
+                                class="text-gray-500 font-bold py-2 hover:text-white transition-colors uppercase text-[10px] tracking-widest border-t border-white/5 w-full pt-4"
+                            >
+                                Change Phone Number
+                            </button>
+                        </div>
                     </div>
                 </div>
             </Transition>
