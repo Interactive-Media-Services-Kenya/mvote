@@ -10,8 +10,18 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    protected $rankingService;
+    
+    public function __construct(\App\Services\RankingService $rankingService)
+    {
+        $this->rankingService = $rankingService;
+    }
+
     public function index()
     {
+        $event = \App\Models\Event::where('is_active', true)->latest()->first();
+        $rankings = $event ? $this->rankingService->getEventRankings($event->id) : collect();
+
         $activePerformance = Performance::with('artist.genre')
             ->where('status', 'live')
             ->first();
@@ -23,15 +33,17 @@ class DashboardController extends Controller
             ->where('status', '!=', 'live')
             ->orderBy('lineup_order')
             ->get()
-            ->map(function($artist) {
+            ->map(function($artist) use ($rankings) {
                 $performance = $artist->performances->first();
-                $totalPoints = 0;
-                $totalPossiblePoints = 0;
                 $voteCount = 0;
+                $finalScore = 0;
+                $ratio = 0;
 
                 if ($performance) {
                     $voteCount = Vote::where('performance_id', $performance->id)->distinct('user_id')->count('user_id');
-                    $finalScore = $performance->getParticipationWeightedScore();
+                    $scoreData = $rankings->firstWhere('performance_id', $performance->id);
+                    $finalScore = $scoreData ? $scoreData->bias_rating : 0;
+                    $ratio = $scoreData ? $scoreData->ratio : 0;
                 }
 
                 return [
@@ -41,14 +53,14 @@ class DashboardController extends Controller
                     'photo' => $artist->photo,
                     'performance_id' => $performance?->id,
                     'vote_count' => $voteCount,
-                    'final_score' => number_format($finalScore ?? 0, 1),
+                    'final_score' => number_format($finalScore, 1),
+                    'ratio' => number_format($ratio, 1),
                     'avg_max' => number_format($performance ? $performance->getEventMaxPoints() : 75, 1),
                 ];
             });
 
-        $totalEventVoters = Vote::distinct('user_id')->count('user_id');
-
         // Map live artist data for frontend
+        $liveScoreData = $activePerformance ? $rankings->firstWhere('performance_id', $activePerformance->id) : null;
         $mappedLiveArtist = $activePerformance ? [
             'id' => $activePerformance->artist->id,
             'performance_id' => $activePerformance->id,
@@ -58,8 +70,9 @@ class DashboardController extends Controller
             'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $activePerformance->is_voting_paused,
-            'final_score' => number_format($activePerformance ? $activePerformance->getParticipationWeightedScore() : 0, 1),
-            'avg_max' => number_format($activePerformance ? $activePerformance->getEventMaxPoints() : 75, 1),
+            'final_score' => number_format($liveScoreData?->bias_rating ?? 0, 1),
+            'ratio' => number_format($liveScoreData?->ratio ?? 0, 1),
+            'avg_max' => number_format($activePerformance->getEventMaxPoints(), 1),
             'vote_count' => Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id'),
         ] : null;
 

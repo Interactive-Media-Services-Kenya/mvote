@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { Head, useForm, usePage } from "@inertiajs/vue3";
+import { Head, useForm, usePage, router } from "@inertiajs/vue3";
 
 const step = ref("AGE_GATE");
 const showCookieConsent = ref(false);
@@ -15,6 +15,10 @@ const form = useForm({
     nick_name: "",
     otp: ["", "", "", "", ""],
 });
+
+const handleCalc = () => {
+    router.post("calculate_score");
+};
 
 const isOtpComplete = computed(() => form.otp.every((v) => v !== ""));
 
@@ -288,6 +292,10 @@ onUnmounted(() => {
                                 d="M9 5l7 7-7 7"
                             />
                         </svg>
+                    </button>
+
+                    <button class="text-white" @click="handleCalc()">
+                        Calcuate
                     </button>
                 </div>
 

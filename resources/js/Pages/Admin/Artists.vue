@@ -154,25 +154,23 @@ const moveArtist = (index, direction) => {
                         >
                             {{ artist.name }}
                         </h4>
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
-                                >{{ artist.genre }}</span
-                            >
-                            <span
-                                class="w-1 h-1 rounded-full bg-gray-700"
-                            ></span>
-                            <span
-                                class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
-                                >{{ artist.scheduled_time }}</span
-                            >
-                            <span
-                                class="w-1 h-1 rounded-full bg-gray-700"
-                            ></span>
-                            <span
-                                class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
-                                >{{ artist.status }}</span
-                            >
+                        <div class="flex flex-col items-start gap-2">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
+                                    >{{ artist.genre }}</span
+                                >
+                            </div>
+                            <div class="flex gap-2">
+                                <span
+                                    class="text-[8px] font-black uppercase text-gray-500 tracking-widest"
+                                    >{{ artist.status }}</span
+                                >
+                                <span
+                                    class="text-[8px] font-black uppercase text-brand-yellow tracking-widest"
+                                    >{{ artist.scheduled_time }}</span
+                                >
+                            </div>
                         </div>
                     </div>
 

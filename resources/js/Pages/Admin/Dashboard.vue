@@ -302,13 +302,12 @@ const encodeName = (name) => encodeURIComponent(name);
                             >
                                 <span
                                     class="text-[10px] font-black italic text-brand-yellow"
-                                    >{{ liveArtist.final_score }} /
-                                    {{ liveArtist.avg_max }}</span
+                                    >{{ liveArtist.final_score }}</span
                                 >
-                                <span
+                                <!-- <span
                                     class="text-[8px] font-bold uppercase text-gray-500"
-                                    >Overall Score</span
-                                >
+                                    >Bias Rating</span
+                                > -->
                             </div>
                             <div
                                 class="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl"
@@ -500,13 +499,12 @@ const encodeName = (name) => encodeURIComponent(name);
                                     >
                                         <span
                                             class="text-[8px] font-black italic text-brand-yellow"
-                                            >{{ artist.final_score }} /
-                                            {{ artist.avg_max }}</span
+                                            >{{ artist.final_score }}</span
                                         >
-                                        <span
+                                        <!-- <span
                                             class="text-[7px] font-bold uppercase text-gray-500"
-                                            >Final Score</span
-                                        >
+                                            >Bias Rating</span
+                                        > -->
                                     </div>
                                     <div
                                         class="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg"

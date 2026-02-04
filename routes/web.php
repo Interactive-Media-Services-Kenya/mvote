@@ -9,6 +9,7 @@ use App\Http\Controllers\LineupController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\VotingScoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -47,5 +48,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/event/questions', [QuestionController::class, 'store'])->name('admin.questions.sync');
         Route::delete('/event/questions/{question}', [QuestionController::class, 'destroy'])->name('admin.questions.delete');
+
+        Route::post('/calculate_score', [VotingScoreController::class, 'calculate_score'])->name('calculate_score');
     });
 });

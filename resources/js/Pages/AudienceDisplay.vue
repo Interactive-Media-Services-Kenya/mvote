@@ -105,7 +105,7 @@ onUnmounted(() => {
             class="z-20 px-12 py-8 flex justify-between items-center bg-black/60 backdrop-blur-md border-b border-white/5"
         >
             <div class="flex items-center gap-8">
-                <div class="flex flex-col">
+                <!-- <div class="flex flex-col">
                     <h1
                         class="text-4xl font-black italic tracking-tighter leading-none"
                     >
@@ -115,7 +115,7 @@ onUnmounted(() => {
                         class="text-[8px] uppercase tracking-[0.5em] text-gray-500 font-bold"
                         >Live Adjudication</span
                     >
-                </div>
+                </div> -->
 
                 <div class="h-8 w-px bg-white/10 mx-2"></div>
                 <div class="flex flex-col">
@@ -270,7 +270,7 @@ onUnmounted(() => {
                                 <h3
                                     class="text-4xl font-black italic uppercase tracking-tighter"
                                 >
-                                    Participation Weighted Score
+                                    Competition Rating
                                 </h3>
                                 <div class="flex items-baseline gap-2">
                                     <span
@@ -312,17 +312,17 @@ onUnmounted(() => {
                                 <p
                                     class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-4"
                                 >
-                                    Global Engagement
+                                    Global Weighting
                                 </p>
                                 <h4
                                     class="text-4xl font-black italic uppercase tracking-tighter leading-none"
                                 >
-                                    Total Participants
+                                    Bias Rating
                                 </h4>
                             </div>
                             <span
                                 class="text-8xl font-black italic tabular-nums tracking-tighter text-brand-yellow"
-                                >{{ activePerformance.voteCount }}</span
+                                >{{ activePerformance.finalScore }}</span
                             >
                         </div>
                     </div>

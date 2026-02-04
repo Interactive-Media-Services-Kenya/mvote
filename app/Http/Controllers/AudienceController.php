@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\DB;
 
 class AudienceController extends Controller
 {
+    protected $rankingService;
+    
+    public function __construct(\App\Services\RankingService $rankingService)
+    {
+        $this->rankingService = $rankingService;
+    }
+
     public function index()
     {
         $event = Event::where('is_active', true)->latest()->first();
@@ -22,6 +29,8 @@ class AudienceController extends Controller
             ]);
         }
 
+        $rankings = $this->rankingService->getEventRankings($event->id);
+        
         $activePerformance = Performance::with('artist.genre')
             ->where('event_id', $event->id)
             ->where('status', 'live')
@@ -32,6 +41,8 @@ class AudienceController extends Controller
             $performanceData = $activePerformance->getGlobalRatingData();
             $voteCount = Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id');
             
+            $scoreData = $rankings->firstWhere('performance_id', $activePerformance->id);
+            
             $performanceDataArray = [
                 'id' => $activePerformance->id,
                 'artist_name' => $activePerformance->artist->name,
@@ -39,7 +50,8 @@ class AudienceController extends Controller
                 'genre' => $activePerformance->artist->genre->title ?? 'Unknown',
                 'voteCount' => $voteCount,
                 'avgRating' => number_format($activePerformance->average_score, 1),
-                'finalScore' => number_format($activePerformance->getParticipationWeightedScore(), 1),
+                'finalScore' => number_format($scoreData?->bias_rating ?? 0, 1),
+                'ratio' => number_format($scoreData?->ratio ?? 0, 1),
                 'avgMax' => number_format($activePerformance->getEventMaxPoints(), 1),
                 'voting_started_at' => $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                 'voting_ends_at' => $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
@@ -51,11 +63,13 @@ class AudienceController extends Controller
             ->where('event_id', $event->id)
             ->whereIn('status', ['closed', 'live'])
             ->get()
-            ->map(function($performance) {
+            ->map(function($performance) use ($rankings) {
+                $scoreData = $rankings->firstWhere('performance_id', $performance->id);
                 return [
                     'id' => $performance->artist_id,
                     'name' => $performance->artist->name,
-                    'score' => $performance->getParticipationWeightedScore(),
+                    'score' => $scoreData ? round($scoreData->bias_rating, 1) : 0,
+                    'ratio' => $scoreData ? round($scoreData->ratio, 1) : 0,
                     'image' => $performance->artist->photo ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($performance->artist->name),
                 ];
             })

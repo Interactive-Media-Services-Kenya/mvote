@@ -452,7 +452,7 @@ onUnmounted(() => {
                         ? 'bg-green-600 text-white'
                         : liveArtist.is_voting_open
                           ? 'bg-brand-yellow text-black shadow-brand-yellow/20'
-                          : 'bg-white/10 text-white/40 border border-white/10 cursor-default',
+                          : 'bg-white/40 text-white border border-white/40 cursor-default',
                     !liveArtist.hasVoted && liveArtist.is_voting_open
                         ? 'active:scale-95'
                         : '',
