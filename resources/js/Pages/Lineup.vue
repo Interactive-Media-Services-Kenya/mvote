@@ -271,6 +271,11 @@ onUnmounted(() => {
                     >
                         <div
                             class="relative rounded-xl overflow-hidden border border-white/10 bg-white/3 h-47.5"
+                            :class="
+                                featuredArtist.status === 'live'
+                                    ? 'border-yellow-400 border-2 animate-hype-pulse'
+                                    : ''
+                            "
                         >
                             <div class="relative z-10 flex h-full">
                                 <div
@@ -291,7 +296,9 @@ onUnmounted(() => {
                                     >
                                         {{ featuredArtist.name }}
                                     </h3>
-                                    <div class="flex flex-col gap-2">
+                                    <div
+                                        class="flex flex-col justify-center gap-2"
+                                    >
                                         <Link
                                             :href="`/artist/${featuredArtist.id}`"
                                             class="bg-white/10 border border-white/10 text-[9px] font-black text-center uppercase px-5 py-2.5 rounded-lg"

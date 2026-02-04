@@ -143,16 +143,16 @@ onUnmounted(() => {
 
         <div class="mb-10 text-center relative z-10 animate-fade-up">
             <div class="flex flex-col items-center">
-                <img
+                <!-- <img
                     :src="'/assets/star-yako-logo.png'"
                     alt="Star Yako Logo"
                     class="h-14 w-auto mb-2 drop-shadow-glow"
-                />
+                /> -->
 
                 <h2
                     class="text-white text-3xl font-black tracking-tighter uppercase italic leading-none mb-1"
                 >
-                    Artist Voting Platform
+                    Artist Rating Platform
                 </h2>
                 <p
                     class="text-white/40 text-[9px] font-black uppercase tracking-[0.2em] mb-6 italic"
