@@ -40,34 +40,34 @@ class LineupController extends Controller
             ->where('event_id', $event->id)
             ->first();
 
-        // Pre-calculate if user has voted for the active performance
-        $hasVotedActive = false;
-        if ($activePerformance && $user) {
-            $hasVotedActive = Vote::where('user_id', $user->id)
-                ->where('performance_id', $activePerformance->id)
-                ->exists();
-        }
+        $allPerformances = Performance::where('event_id', $event->id)->get();
+        $userVotedPerformanceIds = $user 
+            ? Vote::where('user_id', $user->id)
+                ->whereIn('performance_id', $allPerformances->pluck('id'))
+                ->distinct()
+                ->pluck('performance_id')
+                ->toArray()
+            : [];
+
+        $hasVotedActive = $activePerformance && in_array($activePerformance->id, $userVotedPerformanceIds);
 
         $artists = Artist::with('genre')
             ->where('is_active', true)
             ->get()
-            ->map(function ($artist) use ($activePerformance, $user, $hasVotedActive) {
+            ->map(function ($artist) use ($activePerformance, $user, $allPerformances, $userVotedPerformanceIds) {
+                $performance = $allPerformances->where('artist_id', $artist->id)->first();
                 $isLive = $activePerformance && $activePerformance->artist_id === $artist->id;
 
-                $hasVoted = false;
+                $hasVoted = $performance && in_array($performance->id, $userVotedPerformanceIds);
                 $voterRating = null;
                 $globalRating = null;
 
-                if ($isLive && $user) {
-                    $hasVoted = $hasVotedActive;
-
-                    if ($hasVoted) {
-                        $voterRating = [
-                            'points' => $activePerformance->userRatedPoints($user),
-                            'max' => $activePerformance->maxPossiblePoints($user)
-                        ];
-                        $globalRating = $activePerformance->getGlobalRatingData();
-                    }
+                if ($hasVoted && $user && ($isLive || $artist->status === 'closed')) {
+                    $voterRating = [
+                        'points' => $performance->userRatedPoints($user),
+                        'max' => $performance->maxPossiblePoints($user)
+                    ];
+                    $globalRating = $performance->getGlobalRatingData();
                 }
 
                 $statusRank = match ($isLive ? 'live' : $artist->status) {
@@ -98,7 +98,7 @@ class LineupController extends Controller
                     'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
                     'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
                     'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
-                    'performance_id' => $isLive ? $activePerformance->id : null,
+                    'performance_id' => $performance ? $performance->id : null,
                     'hasVoted' => $hasVoted,
                     'voterRating' => $voterRating,
                     'globalRating' => $globalRating,

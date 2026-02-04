@@ -248,7 +248,7 @@ onUnmounted(() => {
                 >
                     <div class="space-y-2">
                         <label
-                            class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1"
+                            class="block text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] ml-1"
                         >
                             Phone Number
                         </label>
@@ -256,7 +256,7 @@ onUnmounted(() => {
                             v-model="form.phone"
                             type="tel"
                             placeholder="Enter your phone number"
-                            class="w-full bg-black/40 border border-white/10 text-white px-6 py-4 rounded-full outline-none focus:border-brand-yellow/50 focus:ring-4 focus:ring-brand-yellow/5 transition-all text-base placeholder:text-gray-600 shadow-inner"
+                            class="w-full bg-black/40 border border-white/30 text-white px-6 py-4 rounded-full outline-none focus:border-brand-yellow/50 focus:ring-4 focus:ring-brand-yellow/5 transition-all text-base placeholder:text-gray-600 shadow-inner"
                         />
                         <p
                             v-if="form.errors.phone"
@@ -294,7 +294,7 @@ onUnmounted(() => {
                 <div v-else key="otp" class="space-y-8 animate-fade-up">
                     <div class="text-center">
                         <h2
-                            class="text-3xl font-black text-white italic tracking-tighter uppercase leading-none"
+                            class="text-3xl font-black text-grey-300 italic tracking-tighter uppercase leading-none"
                         >
                             Verify Identity
                         </h2>
@@ -316,7 +316,7 @@ onUnmounted(() => {
                             type="text"
                             maxlength="1"
                             inputmode="numeric"
-                            class="w-full aspect-square bg-black/40 border border-white/10 focus:border-brand-yellow text-center text-2xl font-black rounded-2xl outline-none transition-all text-white"
+                            class="w-full aspect-square bg-black/40 border border-white/30 focus:border-brand-yellow text-center text-2xl font-black rounded-2xl outline-none transition-all text-white"
                             :class="{
                                 'border-red-500/50 bg-red-500/5':
                                     form.errors.otp,

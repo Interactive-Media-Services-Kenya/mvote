@@ -270,13 +270,36 @@ onUnmounted(() => {
                         class="col-span-2 mb-1"
                     >
                         <div
-                            class="relative rounded-xl overflow-hidden border border-white/10 bg-white/3 h-47.5"
+                            @click="
+                                router.visit(`/artist/${featuredArtist.id}`)
+                            "
+                            class="relative rounded-xl overflow-hidden border border-white/10 bg-white/3 h-47.5 cursor-pointer group/card"
                             :class="
                                 featuredArtist.status === 'live'
                                     ? 'border-yellow-400 border-2 animate-hype-pulse'
                                     : ''
                             "
                         >
+                            <!-- Voted Badge -->
+                            <div
+                                v-if="featuredArtist.hasVoted"
+                                class="absolute top-3 right-3 z-30 bg-green-500/90 backdrop-blur-sm text-white text-[8px] font-black uppercase px-2 py-1 rounded-md flex items-center gap-1 shadow-lg border border-white/20"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-2 w-2"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                                Voted
+                            </div>
+
                             <div class="relative z-10 flex h-full">
                                 <div
                                     class="flex-1 p-6 flex flex-col justify-center"
@@ -311,7 +334,9 @@ onUnmounted(() => {
                                                 featuredArtist.is_voting_open &&
                                                 !featuredArtist.hasVoted
                                             "
-                                            @click="openVoting(featuredArtist)"
+                                            @click.stop="
+                                                openVoting(featuredArtist)
+                                            "
                                             class="bg-brand-yellow text-black text-[9px] font-black uppercase px-5 py-2.5 rounded-lg shadow-lg active:scale-95 transition-all"
                                         >
                                             Rate Now
@@ -342,16 +367,45 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div
+                    <Link
                         v-for="artist in displayArtists"
                         :key="artist.id"
-                        class="relative p-1 rounded-xl transition-all border"
+                        :href="`/artist/${artist.id}`"
+                        class="relative p-1 rounded-xl transition-all border block group/gridcard"
                         :class="
                             artist.status === 'live'
                                 ? 'border-brand-yellow/50 bg-brand-yellow/5'
-                                : 'border-white/10 bg-white/2'
+                                : 'border-white/10 bg-white/2 hover:border-white/30'
                         "
                     >
+                        <!-- Voted Mini-Badge -->
+                        <div
+                            v-if="artist.hasVoted"
+                            class="absolute top-2 right-2 z-30 bg-green-500 text-white p-1 rounded-full shadow-lg border border-white/20"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-2 w-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <!-- Not Voted Badge (only in Performed tab) -->
+                        <div
+                            v-else-if="
+                                activeTab === 'closed' &&
+                                artist.status === 'closed'
+                            "
+                            class="absolute top-2 right-2 z-30 bg-red-500/80 backdrop-blur-xs text-white text-[7px] font-black uppercase px-1.5 py-0.5 rounded border border-white/10 shadow-lg"
+                        >
+                            Missed
+                        </div>
                         <div
                             class="relative aspect-square rounded-lg overflow-hidden mb-3"
                         >
@@ -377,7 +431,7 @@ onUnmounted(() => {
                                 >
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </div>
         </div>
