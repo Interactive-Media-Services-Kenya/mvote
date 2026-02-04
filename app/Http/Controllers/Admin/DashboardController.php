@@ -22,11 +22,9 @@ class DashboardController extends Controller
     public function index()
     {
         $event = \App\Models\Event::where('is_active', true)->latest()->first();
-        $rankings = $event ? $this->rankingService->rawSQL($event->id) : collect();
+        $rankings = $event ? $this->rankingService->getEventRankings($event->id) : collect();
 
         // print ("<pre>");
-        print_r($rankings);
-        exit;
 
         $activePerformance = Performance::with('artist.genre')
             ->where('status', 'live')
