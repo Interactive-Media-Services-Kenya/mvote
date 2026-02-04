@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, useForm, usePage } from "@inertiajs/vue3";
 
 const step = ref("IDENTIFY");
@@ -80,10 +80,23 @@ const handleVerify = () => {
     });
 };
 
+const images = [
+    "/assets/carousel_1.png",
+    "/assets/carousel_2.png",
+    "/assets/carousel_3.png",
+];
+const currentImageIndex = ref(0);
+let timer = null;
+
 onMounted(() => {
-    if (!localStorage.getItem("cookie_consent")) {
-        showCookieConsent.value = true;
-    }
+    timer = setInterval(() => {
+        currentImageIndex.value = (currentImageIndex.value + 1) % images.length;
+    }, 5000);
+    if (!localStorage.getItem("cookie_consent")) showCookieConsent.value = true;
+});
+
+onUnmounted(() => {
+    if (timer) clearInterval(timer);
 });
 </script>
 
@@ -95,83 +108,143 @@ onMounted(() => {
     >
         <div class="absolute inset-0 z-0">
             <div
-                class="absolute inset-0 bg-brand-black/60 z-10 backdrop-blur-[2px]"
+                class="absolute inset-0 bg-black/70 z-10 backdrop-blur-xs"
             ></div>
-            <img
-                :src="'/assets/carousel_1.png'"
-                class="w-full h-full object-cover animate-ken-burns"
-                alt="Background"
-            />
+            <Transition name="fade-overlay">
+                <img
+                    :key="images[currentImageIndex]"
+                    :src="images[currentImageIndex]"
+                    class="absolute inset-0 w-full h-full object-cover animate-ken-burns"
+                />
+            </Transition>
         </div>
 
-        <div class="mb-12 text-center animate-fade-up relative z-10">
-            <h1
-                class="text-5xl font-black italic tracking-tighter text-white uppercase drop-shadow-2xl"
-            >
-                M<span class="text-brand-yellow">VOTE</span>
-            </h1>
-            <p
-                class="text-gray-200 mt-2 font-black uppercase tracking-[0.3em] text-[10px] drop-shadow-lg"
-            >
-                Your Voice, The Stage Energy.
-            </p>
+        <div class="mb-10 text-center relative z-10 animate-fade-up">
+            <div class="flex flex-col items-center">
+                <img
+                    :src="'/assets/star-yako-logo.png'"
+                    alt="Star Yako Logo"
+                    class="h-14 w-auto mb-2 drop-shadow-glow"
+                />
+
+                <h2
+                    class="text-white text-3xl font-black tracking-tighter uppercase italic leading-none mb-1"
+                >
+                    Artist Voting Platform
+                </h2>
+                <p
+                    class="text-white/40 text-[9px] font-black uppercase tracking-[0.2em] mb-6 italic"
+                >
+                    Join the crowd and cast your vote in seconds.
+                </p>
+
+                <div
+                    class="flex gap-4 text-[10px] font-bold text-brand-yellow/80 uppercase tracking-widest"
+                >
+                    <span class="flex items-center gap-1.5">
+                        <svg
+                            class="w-3 h-3"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"
+                            />
+                        </svg>
+                        Secure Verification
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <svg
+                            class="w-3 h-3"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"
+                            />
+                        </svg>
+                        Mobile-First
+                    </span>
+                </div>
+            </div>
         </div>
 
         <div class="w-full max-w-sm relative z-10">
+            <div
+                class="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent mb-10"
+            ></div>
+
             <Transition name="fade-slide" mode="out-in">
                 <div
                     v-if="step === 'IDENTIFY'"
                     key="identify"
-                    class="space-y-8 animate-fade-up"
+                    class="space-y-6"
                 >
-                    <div class="space-y-4">
-                        <div class="group">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
-                                :class="{ 'text-red-500': form.errors.phone }"
-                            >
-                                Phone Number
-                            </label>
-                            <input
-                                v-model="form.phone"
-                                @input="form.clearErrors('phone')"
-                                type="tel"
-                                placeholder="07XX XXX XXX"
-                                class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-white px-5 py-4 rounded-2xl outline-none transition-all text-lg font-bold"
-                                :class="{
-                                    'border-red-500/50 bg-red-500/5':
-                                        form.errors.phone,
-                                }"
-                            />
-                            <p
-                                v-if="form.errors.phone"
-                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight animate-shake"
-                            >
-                                {{ form.errors.phone }}
-                            </p>
-                        </div>
+                    <div class="space-y-2">
+                        <label
+                            class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1"
+                        >
+                            Phone Number
+                        </label>
+                        <input
+                            v-model="form.phone"
+                            type="tel"
+                            placeholder="Enter your phone number"
+                            class="w-full bg-black/40 border border-white/10 text-white px-6 py-4 rounded-full outline-none focus:border-brand-yellow/50 focus:ring-4 focus:ring-brand-yellow/5 transition-all text-base placeholder:text-gray-600 shadow-inner"
+                        />
+                        <p
+                            v-if="form.errors.phone"
+                            class="text-red-500 text-[10px] font-bold mt-2 ml-4 animate-shake uppercase"
+                        >
+                            {{ form.errors.phone }}
+                        </p>
                     </div>
 
                     <button
                         @click="handleIdentify"
-                        :disabled="!form.phone || form.processing"
-                        class="w-full bg-brand-yellow hover:bg-yellow-500 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale uppercase tracking-tighter text-xl shadow-[0_0_20px_rgba(255,107,0,0.3)] animate-hype-pulse"
+                        :disabled="form.processing"
+                        class="w-full bg-linear-to-r from-brand-yellow to-yellow-600 text-black font-black py-4 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-2 group overflow-hidden shadow-xl"
                     >
-                        {{ form.processing ? "Sending..." : "Get OTP" }}
+                        <span class="uppercase tracking-tighter text-lg">
+                            {{ form.processing ? "Processing..." : "Continue" }}
+                        </span>
+                        <svg
+                            v-if="!form.processing"
+                            class="w-5 h-5 transition-transform group-hover:translate-x-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="3"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
                     </button>
 
-                    <p class="text-center text-xs text-gray-600 px-4">
-                        By continuing, you agree to experience the hype and vote
-                        fairly.
+                    <p
+                        class="text-center text-[10px] text-gray-500 uppercase tracking-widest pt-4"
+                    >
+                        Press Enter to continue
                     </p>
                 </div>
 
                 <div v-else key="otp" class="space-y-8 animate-fade-up">
                     <div class="text-center">
-                        <h2 class="text-xl font-bold">Check your phone</h2>
-                        <p class="text-gray-400 text-sm mt-1">
-                            Sent code to
-                            <span class="text-white">{{ form.phone }}</span>
+                        <h2
+                            class="text-3xl font-black text-white italic tracking-tighter uppercase leading-none"
+                        >
+                            Verify Identity
+                        </h2>
+                        <p
+                            class="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-2"
+                        >
+                            Code sent to
+                            <span class="text-brand-yellow">{{
+                                form.phone
+                            }}</span>
                         </p>
                     </div>
 
@@ -183,7 +256,7 @@ onMounted(() => {
                             type="text"
                             maxlength="1"
                             inputmode="numeric"
-                            class="w-full aspect-square bg-brand-gray border-2 border-transparent focus:border-brand-yellow text-center text-2xl font-black rounded-xl outline-none transition-all"
+                            class="w-full aspect-square bg-black/40 border border-white/10 focus:border-brand-yellow text-center text-2xl font-black rounded-2xl outline-none transition-all text-white"
                             :class="{
                                 'border-red-500/50 bg-red-500/5':
                                     form.errors.otp,
@@ -191,9 +264,10 @@ onMounted(() => {
                             @input="handleOtpInput(i, $event)"
                         />
                     </div>
+
                     <p
                         v-if="form.errors.otp"
-                        class="text-red-500 text-center text-[10px] font-bold uppercase tracking-tight animate-shake"
+                        class="text-red-500 text-[10px] font-black mt-2 text-center animate-shake uppercase tracking-widest"
                     >
                         {{ form.errors.otp }}
                     </p>
@@ -201,7 +275,7 @@ onMounted(() => {
                     <transition name="fade-up">
                         <div v-if="isNewUser" class="group animate-fade-up">
                             <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 transition-colors group-focus-within:text-brand-yellow"
+                                class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-2 transition-colors group-focus-within:text-brand-yellow"
                                 :class="{
                                     'text-red-500': form.errors.nick_name,
                                 }"
@@ -220,7 +294,7 @@ onMounted(() => {
                             />
                             <p
                                 v-if="form.errors.nick_name"
-                                class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tight"
+                                class="text-red-500 text-[10px] font-black mt-2 uppercase animate-shake tracking-widest"
                             >
                                 {{ form.errors.nick_name }}
                             </p>
@@ -230,74 +304,17 @@ onMounted(() => {
                     <div class="space-y-4">
                         <button
                             @click="handleVerify"
-                            :disabled="
-                                !isOtpComplete ||
-                                form.processing ||
-                                (isNewUser && !form.nick_name)
-                            "
-                            class="w-full bg-white hover:bg-gray-200 text-black font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 uppercase tracking-tighter text-xl"
+                            :disabled="!isOtpComplete || form.processing"
+                            class="w-full bg-white text-black font-black py-4 rounded-full transition-all active:scale-95 uppercase tracking-widest text-sm shadow-lg"
                         >
-                            {{
-                                form.processing ? "Verifying..." : "Enter Arena"
-                            }}
+                            Enter Arena
                         </button>
 
                         <button
                             @click="step = 'IDENTIFY'"
-                            class="w-full text-gray-500 font-bold py-2 hover:text-white transition-colors uppercase text-xs tracking-widest"
+                            class="w-full text-gray-500 font-bold py-2 hover:text-white transition-colors uppercase text-[10px] tracking-widest"
                         >
-                            Back to info
-                        </button>
-                    </div>
-                </div>
-            </Transition>
-            <Transition name="fade-up">
-                <div
-                    v-if="showCookieConsent"
-                    class="fixed bottom-6 left-6 right-6 z-60 glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-brand-yellow/20 shadow-[0_-10px_50px_rgba(0,0,0,0.5)] animate-fade-up max-w-lg mx-auto md:max-w-none"
-                >
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-brand-yellow/10 flex items-center justify-center text-brand-yellow shrink-0"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-white">
-                                We Value Your Hype
-                            </h3>
-                            <p class="text-gray-400 text-xs">
-                                We use cookies to enhance your arena experience
-                                and analyze site traffic.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3 w-full md:w-auto">
-                        <button
-                            @click="showCookieConsent = false"
-                            class="flex-1 md:flex-none px-6 py-3 text-xs font-bold text-gray-400 hover:text-white transition-colors"
-                        >
-                            Close
-                        </button>
-                        <button
-                            @click="acceptCookies"
-                            class="flex-1 md:flex-none px-8 py-3 bg-brand-yellow text-black font-black text-xs uppercase tracking-widest rounded-xl hover:bg-white transition-all transform active:scale-95 shadow-[0_4px_15px_rgba(255,205,0,0.3)]"
-                        >
-                            Accept
+                            Change Phone Number
                         </button>
                     </div>
                 </div>
@@ -307,32 +324,59 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Same as original style */
+.drop-shadow-glow {
+    filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.4));
+}
+
+/* Page Step Transitions */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .fade-slide-enter-from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateY(10px);
 }
-
 .fade-slide-leave-to {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateY(-10px);
+}
+
+/* Carousel Cross-fade */
+.fade-overlay-enter-active,
+.fade-overlay-leave-active {
+    transition: opacity 2s ease-in-out;
+}
+.fade-overlay-enter-from,
+.fade-overlay-leave-to {
+    opacity: 0;
 }
 
 @keyframes ken-burns {
     0% {
-        transform: scale(1) translate(0, 0);
+        transform: scale(1);
     }
     100% {
-        transform: scale(1.1) translate(-1%, -1%);
+        transform: scale(1.15);
     }
 }
-
 .animate-ken-burns {
-    animation: ken-burns 20s linear infinite alternate;
+    animation: ken-burns 30s linear infinite alternate;
+}
+
+@keyframes shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-4px);
+    }
+    75% {
+        transform: translateX(4px);
+    }
+}
+.animate-shake {
+    animation: shake 0.2s ease-in-out 0s 2;
 }
 </style>

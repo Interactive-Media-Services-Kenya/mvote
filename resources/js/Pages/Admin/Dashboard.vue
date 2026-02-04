@@ -413,14 +413,14 @@ const encodeName = (name) => encodeURIComponent(name);
                 >
                     <button
                         @click="activeTab = 'upcoming'"
-                        class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                        class="pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative"
                         :class="
                             activeTab === 'upcoming'
                                 ? 'text-brand-yellow'
                                 : 'text-gray-500 hover:text-white'
                         "
                     >
-                        On Deck
+                        Up coming
                         <div
                             v-if="activeTab === 'upcoming'"
                             class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-yellow"
@@ -428,7 +428,7 @@ const encodeName = (name) => encodeURIComponent(name);
                     </button>
                     <button
                         @click="activeTab = 'closed'"
-                        class="pb-4 text-xs font-black uppercase tracking-widest transition-all relative"
+                        class="pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative"
                         :class="
                             activeTab === 'closed'
                                 ? 'text-brand-yellow'

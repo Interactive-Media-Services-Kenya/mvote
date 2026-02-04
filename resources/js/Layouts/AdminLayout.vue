@@ -45,9 +45,14 @@ const navItems = [
                         <span class="text-xs">&larr;</span> Exit
                     </Link>
                     <div class="h-4 w-px bg-white/10"></div>
-                    <h1 class="text-2xl font-black italic tracking-tighter">
-                        M<span class="text-brand-yellow">VOTE</span>
-                    </h1>
+
+                    <Link href="/admin/dashboard">
+                        <img
+                            :src="'/assets/star-yako-logo.png'"
+                            alt="Star Yako Logo"
+                            class="h-8 w-auto object-contain"
+                        />
+                    </Link>
                 </div>
 
                 <UserMenu />

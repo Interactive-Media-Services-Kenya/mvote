@@ -155,7 +155,9 @@ class LineupController extends Controller
                 }
             ]);
         }
-        $artistModel = Artist::with('genre')->findOrFail($id);
+        $artistModel = Artist::with(['genre', 'discography' => function($q) {
+            $q->orderBy('release_year', 'desc');
+        }])->findOrFail($id);
 
         $activePerformance = Performance::where('status', 'live')
             ->where('event_id', $event->id)
@@ -196,7 +198,15 @@ class LineupController extends Controller
             'is_performing' => $isPerforming,
             'is_voting_open' => $isVotingOpen,
             'scheduledTime' => $artistModel->scheduled_time ? $artistModel->scheduled_time->format('H:i') : '--:--',
-            'discography' => [],
+            'discography' => $artistModel->discography->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'title' => $item->title,
+                    'year' => $item->release_year,
+                    'description' => $item->description,
+                    'link' => $item->link,
+                ];
+            }),
             'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,

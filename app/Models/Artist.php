@@ -26,6 +26,11 @@ class Artist extends Model
         return $this->hasMany(Performance::class);
     }
 
+    public function discography()
+    {
+        return $this->hasMany(Discography::class);
+    }
+
     public function getScheduledTimeAttribute()
     {
         $event = Event::where('is_active', true)->latest()->first();

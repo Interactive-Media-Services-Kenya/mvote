@@ -294,53 +294,157 @@ const goBack = () => {
                     </p>
                 </div>
 
-                <!-- Discography Section (Glass List) -->
-                <section>
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-black italic">Discography</h2>
-                        <span
-                            class="text-brand-yellow text-xs font-bold uppercase"
-                            >See all</span
+                <!-- Discography Section (Apple Music Style) -->
+                <section class="mt-12">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex flex-col">
+                            <h2
+                                class="text-3xl font-black italic tracking-tighter uppercase"
+                            >
+                                Discography
+                            </h2>
+                            <span
+                                class="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold"
+                                >Latest Releases</span
+                            >
+                        </div>
+                        <button
+                            v-if="artist.discography.length > 3"
+                            class="text-brand-yellow text-[10px] font-black uppercase tracking-widest border border-brand-yellow/30 px-4 py-2 rounded-full hover:bg-brand-yellow/10 transition-colors"
                         >
+                            View All
+                        </button>
                     </div>
 
-                    <div class="space-y-4">
+                    <div v-if="artist.discography.length > 0" class="space-y-3">
                         <div
                             v-for="(album, i) in artist.discography"
-                            :key="i"
-                            class="glass-card p-4 rounded-2xl flex items-center gap-4 border-white/5 group active:bg-white/10 transition-colors"
+                            :key="album.id"
+                            class="group relative overflow-hidden rounded-[2.5rem] p-1 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
                         >
+                            <!-- Animated Gradient Background on Hover -->
                             <div
-                                class="w-16 h-16 bg-brand-gray rounded-xl shrink-0 flex items-center justify-center font-black text-brand-yellow/40 text-xl italic overflow-hidden"
+                                class="absolute inset-0 bg-linear-to-r from-brand-yellow/20 via-transparent to-brand-yellow/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                            ></div>
+
+                            <div
+                                class="relative glass-card bg-white/[0.03] backdrop-blur-3xl p-5 rounded-[2.2rem] flex items-center gap-6 border border-white/10 group-hover:border-white/20 transition-all duration-300 shadow-2xl"
                             >
-                                <img
-                                    v-if="i === 0"
-                                    :src="artist.image"
-                                    class="w-full h-full object-cover opacity-60"
-                                />
-                                <span v-else>{{ album.title.charAt(0) }}</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-lg truncate">
-                                    {{ album.title }}
-                                </h4>
-                                <p class="text-gray-500 text-sm font-medium">
-                                    {{ album.year }}
-                                </p>
-                            </div>
-                            <button
-                                class="text-white/20 group-active:text-white transition-colors"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-6 w-6"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
+                                <!-- Album Art Placeholder with Glass Effect -->
+                                <div
+                                    class="w-20 h-20 bg-linear-to-br from-brand-gray to-black rounded-3xl shrink-0 flex items-center justify-center font-black text-brand-yellow/20 text-3xl italic overflow-hidden shadow-xl border border-white/5 group-hover:border-brand-yellow/20 transition-all"
                                 >
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
-                            </button>
+                                    <img
+                                        v-if="i === 0"
+                                        :src="artist.image"
+                                        class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
+                                    />
+                                    <span v-else>{{
+                                        album.title.charAt(0)
+                                    }}</span>
+                                </div>
+
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4
+                                            class="font-black text-xl italic tracking-tight truncate group-hover:text-brand-yellow transition-colors"
+                                        >
+                                            {{ album.title }}
+                                        </h4>
+                                        <span
+                                            v-if="i === 0"
+                                            class="bg-brand-yellow/10 text-brand-yellow text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-widest"
+                                            >Latest</span
+                                        >
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <p
+                                            class="text-gray-500 text-xs font-bold tracking-widest uppercase"
+                                        >
+                                            {{ album.year }}
+                                        </p>
+                                        <div
+                                            class="w-1 h-1 rounded-full bg-gray-700"
+                                        ></div>
+                                        <p
+                                            class="text-gray-500 text-[10px] font-medium truncate italic opacity-60"
+                                        >
+                                            {{
+                                                album.description ||
+                                                "Studio Album"
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <a
+                                    v-if="album.link"
+                                    :href="album.link"
+                                    target="_blank"
+                                    class="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-white/40 hover:text-brand-yellow hover:scale-110 active:scale-90 transition-all border border-white/10"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-6 w-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                        />
+                                    </svg>
+                                </a>
+                                <div
+                                    v-else
+                                    class="w-12 h-12 flex items-center justify-center text-white/5"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-8 w-8"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    <!-- Empty State -->
+                    <div
+                        v-else
+                        class="glass-card p-12 rounded-[2.5rem] border-white/5 border-dashed border flex flex-col items-center justify-center text-center group"
+                    >
+                        <div
+                            class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-10 w-10 text-white/20"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                                />
+                            </svg>
+                        </div>
+                        <h4
+                            class="text-white/40 font-black italic uppercase tracking-widest text-sm"
+                        >
+                            No Releases Found
+                        </h4>
+                        <p class="text-[10px] text-gray-600 font-bold mt-2">
+                            Stay tuned for updates from {{ artist.name }}
+                        </p>
                     </div>
                 </section>
             </div>
