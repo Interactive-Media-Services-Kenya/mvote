@@ -294,9 +294,9 @@ onUnmounted(() => {
                         </svg>
                     </button>
 
-                    <button class="text-white" @click="handleCalc()">
+                    <!-- <button class="text-white" @click="handleCalc()">
                         Calcuate
-                    </button>
+                    </button> -->
                 </div>
 
                 <div v-else key="otp" class="space-y-8 animate-fade-up">
