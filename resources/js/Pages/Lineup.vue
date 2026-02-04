@@ -155,15 +155,15 @@ onUnmounted(() => {
         <Head title="Lineup - MVote" />
 
         <nav
-            class="sticky top-0 z-50 glass-nav px-6 py-3 flex items-center justify-between border-b border-white/10"
+            class="sticky top-0 z-50 glass-nav px-6 py-3 flex items-center justify-end border-b border-white/10"
         >
-            <div class="flex items-center">
+            <!-- <div class="flex items-center">
                 <img
                     :src="'/assets/star-yako-logo.png'"
                     alt="Star Yako Logo"
                     class="h-8 w-auto object-contain"
                 />
-            </div>
+            </div> -->
             <UserMenu />
         </nav>
 

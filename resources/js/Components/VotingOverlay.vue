@@ -67,6 +67,7 @@ watch(
             if (timerInterval) clearInterval(timerInterval);
         }
     },
+    { immediate: true },
 );
 
 watch(
