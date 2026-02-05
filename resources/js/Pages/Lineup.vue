@@ -495,12 +495,12 @@ onUnmounted(() => {
 }
 
 /* Global modal background overrides */
-:deep(.modal-background),
+/* :deep(.modal-background),
 :deep(.glass-card) {
     background-image:
         linear-gradient(to bottom, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.95)),
         url("/assets/carousel_2.png") !important;
     background-size: cover !important;
     background-position: center !important;
-}
+} */
 </style>
