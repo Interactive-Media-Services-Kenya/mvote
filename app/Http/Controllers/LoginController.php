@@ -35,7 +35,7 @@ class LoginController extends Controller
             $phone = substr($phone, 1);
         }
 
-        $fanRole = Role::where('name', 'fan')->first();
+        $fanRole = Role::where('name', 'judge')->first();
 
         // Find or create the user only with phone
         $user = User::firstOrCreate(
