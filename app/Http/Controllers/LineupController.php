@@ -167,22 +167,26 @@ class LineupController extends Controller
             ->where('event_id', $event->id)
             ->first();
 
+        $artistPerformance = Performance::where('artist_id', $artistModel->id)
+            ->where('event_id', $event->id)
+            ->first();
+
         $isLive = $activePerformance && $activePerformance->artist_id === $artistModel->id;
         $hasVoted = false;
         $voterRating = null;
         $globalRating = null;
 
-        if ($isLive && $user) {
+        if ($artistPerformance && $user) {
             $hasVoted = Vote::where('user_id', $user->id)
-                ->where('performance_id', $activePerformance->id)
+                ->where('performance_id', $artistPerformance->id)
                 ->exists();
 
             if ($hasVoted) {
                 $voterRating = [
-                    'points' => $activePerformance->userRatedPoints($user),
-                    'max' => $activePerformance->maxPossiblePoints($user)
+                    'points' => $artistPerformance->userRatedPoints($user),
+                    'max' => $artistPerformance->maxPossiblePoints($user)
                 ];
-                $globalRating = $activePerformance->getGlobalRatingData();
+                $globalRating = $artistPerformance->getGlobalRatingData();
             }
         }
 
@@ -214,7 +218,7 @@ class LineupController extends Controller
             'voting_started_at' => $isLive && $activePerformance->voting_started_at ? $activePerformance->voting_started_at->toISOString() : null,
             'voting_ends_at' => $isLive && $activePerformance->voting_ends_at ? $activePerformance->voting_ends_at->toISOString() : null,
             'is_voting_paused' => $isLive ? $activePerformance->is_voting_paused : false,
-            'performance_id' => $isLive ? $activePerformance->id : null,
+            'performance_id' => $artistPerformance ? $artistPerformance->id : null,
             'hasVoted' => $hasVoted,
             'voterRating' => $voterRating,
             'globalRating' => $globalRating,

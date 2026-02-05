@@ -83,7 +83,8 @@ const calculateTimeLeft = () => {
 };
 
 onMounted(() => {
-    console.log("Echo listener starting..."); // Step 1: Check if this runs
+    console.log("Echo listener starting...");
+    console.log(closedArtists.value);
 
     if (window.Echo) {
         window.Echo.channel("performances")

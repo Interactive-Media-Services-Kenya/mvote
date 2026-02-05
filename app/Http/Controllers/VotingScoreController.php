@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Performance;
 use App\Models\Vote;
 use Illuminate\Support\Facades\DB;
 
@@ -35,8 +36,12 @@ class VotingScoreController extends Controller
     public function calculate_score()
     {
         $event = \App\Models\Event::where('is_active', true)->latest()->first();
-        if (!$event) return response()->json(['error' => 'No active event']);
+        if (!$event)
+            return response()->json(['error' => 'No active event']);
 
-        return app(\App\Services\RankingService::class)->getEventRankings($event->id);
+        $performance = Performance::latest()->first();
+        // $rankings = $performance ? $this->rankingService->getEventRankings($performance->id) : collect();
+
+        return app(\App\Services\RankingService::class)->getEventRankings($performance->id);
     }
 }

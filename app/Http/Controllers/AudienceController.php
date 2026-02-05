@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class AudienceController extends Controller
 {
     protected $rankingService;
-    
+
     public function __construct(\App\Services\RankingService $rankingService)
     {
         $this->rankingService = $rankingService;
@@ -29,8 +29,11 @@ class AudienceController extends Controller
             ]);
         }
 
-        $rankings = $this->rankingService->getEventRankings($event->id);
-        
+        $performance = Performance::latest()->first();
+        $rankings = $performance ? $this->rankingService->getEventRankings($performance->id) : collect();
+
+        // $rankings = $this->rankingService->getEventRankings($event->id);
+
         $activePerformance = Performance::with('artist.genre')
             ->where('event_id', $event->id)
             ->where('status', 'live')
@@ -38,11 +41,15 @@ class AudienceController extends Controller
 
         $performanceDataArray = null;
         if ($activePerformance) {
+            // print ("<pre>");
+            // print_r($activePerformance);
+            exit;
             $performanceData = $activePerformance->getGlobalRatingData();
             $voteCount = Vote::where('performance_id', $activePerformance->id)->distinct('user_id')->count('user_id');
-            
-            $scoreData = $rankings->firstWhere('performance_id', $activePerformance->id);
-            
+
+            // $scoreData = $rankings->firstWhere('performance_id', $activePerformance->id);
+            $scoreData = $activePerformance ? $this->rankingService->getEventRankings($activePerformance->id) : null;
+
             $performanceDataArray = [
                 'id' => $activePerformance->id,
                 'artist_name' => $activePerformance->artist->name,
@@ -61,7 +68,7 @@ class AudienceController extends Controller
             ->where('event_id', $event->id)
             ->whereIn('status', ['closed', 'live'])
             ->get()
-            ->map(function($performance) use ($rankings) {
+            ->map(function ($performance) use ($rankings) {
                 $scoreData = $rankings->firstWhere('performance_id', $performance->id);
                 return [
                     'id' => $performance->artist_id,

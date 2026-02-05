@@ -93,6 +93,12 @@ const handleNext = () => {
     }
 };
 
+const handleBack = () => {
+    if (currentQuestionIndex.value > 0) {
+        currentQuestionIndex.value--;
+    }
+};
+
 const handleRating = (rating) => {
     if (isPaused.value) return;
     answers.value[currentQuestion.value.id] = rating;
@@ -106,6 +112,13 @@ const handleRating = (rating) => {
 const submitVote = () => {
     isSubmitting.value = true;
 
+    // Optimistic UI update: Transition to success immediately
+    step.value = "SUCCESS";
+    emit("submit", {
+        ratings: answers.value,
+        comment: comment.value,
+    });
+
     router.post(
         "/vote",
         {
@@ -117,14 +130,12 @@ const submitVote = () => {
         {
             onSuccess: () => {
                 isSubmitting.value = false;
-                step.value = "SUCCESS";
-                emit("submit", {
-                    ratings: answers.value,
-                    comment: comment.value,
-                });
+                // step and emit already handled optimistically
             },
             onError: () => {
                 isSubmitting.value = false;
+                // If it fails, we might want to stay in success or show an error
+                // The backend check for 'already voted' will likely prevent most issues
             },
         },
     );
@@ -266,8 +277,30 @@ const canSubmit = computed(() => {
                             >
                                 <header>
                                     <div
-                                        class="flex items-center justify-center gap-2 mb-2"
+                                        class="flex items-center justify-center gap-2 mb-2 relative"
                                     >
+                                        <!-- Back Button -->
+                                        <button
+                                            v-if="currentQuestionIndex > 0"
+                                            @click="handleBack"
+                                            class="absolute left-0 p-2 text-gray-500 hover:text-brand-yellow transition-colors hover:scale-110 active:scale-95"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="3"
+                                                    d="M15 19l-7-7 7-7"
+                                                />
+                                            </svg>
+                                        </button>
+
                                         <span
                                             class="text-brand-yellow text-[10px] font-black uppercase tracking-widest"
                                             >Question</span

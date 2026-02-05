@@ -35,12 +35,13 @@ class LoginController extends Controller
             $phone = substr($phone, 1);
         }
 
-        $fanRole = Role::where('name', 'fan')->first();
+        // $fanRole = Role::where('name', 'fan')->first();
+        $indusLeaderRole = Role::where('name', 'judge')->first();
 
         // Find or create the user only with phone
         $user = User::firstOrCreate(
             ['phone' => $phone],
-            ['role_id' => $fanRole->id]
+            ['role_id' => $indusLeaderRole->id]
         );
 
         $isNewUser = $user->wasRecentlyCreated || empty($user->nick_name);

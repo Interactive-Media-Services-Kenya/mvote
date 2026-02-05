@@ -1,10 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { Head, useForm, usePage, router } from "@inertiajs/vue3";
+import { Head, useForm, usePage } from "@inertiajs/vue3";
 
 const step = ref("AGE_GATE");
 const showCookieConsent = ref(false);
 const isNewUser = ref(false);
+const isAgeVerified = ref(false);
+const photoConsent = ref(false);
+const hasDeclined = ref(false);
 const page = usePage();
 
 const resendCooldown = ref(0);
@@ -15,10 +18,6 @@ const form = useForm({
     nick_name: "",
     otp: ["", "", "", "", ""],
 });
-
-const handleCalc = () => {
-    router.post("calculate_score");
-};
 
 const isOtpComplete = computed(() => form.otp.every((v) => v !== ""));
 
@@ -206,43 +205,177 @@ onUnmounted(() => {
                     key="age-gate"
                     class="space-y-8 animate-fade-up"
                 >
-                    <div class="text-center">
-                        <div
-                            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-yellow/10 border border-brand-yellow/20 mb-6"
-                        >
-                            <span
-                                class="text-2xl font-black text-brand-yellow italic"
-                                >18+</span
+                    <template v-if="!hasDeclined">
+                        <div class="text-center">
+                            <div
+                                class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-yellow/10 border border-brand-yellow/20 mb-6"
                             >
+                                <span
+                                    class="text-2xl font-black text-brand-yellow italic"
+                                    >18+</span
+                                >
+                            </div>
+                            <h2
+                                class="text-3xl font-black text-white italic tracking-tighter uppercase leading-none mb-4"
+                            >
+                                Entry Requirements
+                            </h2>
+                            <p
+                                class="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-6"
+                            >
+                                Please confirm you meet the requirements to
+                                enter the arena.
+                            </p>
                         </div>
-                        <h2
-                            class="text-3xl font-black text-white italic tracking-tighter uppercase leading-none mb-4"
-                        >
-                            Age Verification
-                        </h2>
-                        <p
-                            class="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed"
-                        >
-                            This platform contains content intended for adults.
-                            Please confirm you are of legal age to continue.
-                        </p>
-                    </div>
 
-                    <button
-                        @click="step = 'IDENTIFY'"
-                        class="w-full bg-linear-to-r from-brand-yellow to-yellow-600 text-black font-black py-5 rounded-full transition-all active:scale-[0.98] shadow-xl group overflow-hidden"
-                    >
-                        <span class="uppercase tracking-tighter text-lg"
-                            >I am 18 or older</span
+                        <div
+                            class="space-y-4 glass-card p-6 rounded-3xl border-white/10"
                         >
-                    </button>
+                            <!-- Age Checkbox -->
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group"
+                            >
+                                <div class="relative flex items-center my-1">
+                                    <input
+                                        type="checkbox"
+                                        v-model="isAgeVerified"
+                                        class="peer h-5 w-5 appearance-none rounded-lg border-2 border-white/20 checked:border-brand-yellow checked:bg-brand-yellow transition-all"
+                                    />
+                                    <svg
+                                        class="absolute h-5 w-5 text-black opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="4"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-xs font-bold text-gray-300 uppercase tracking-tight group-hover:text-white transition-colors"
+                                >
+                                    I confirm I am 18 years of age or older.
+                                </span>
+                            </label>
 
-                    <p
-                        class="text-center text-[9px] text-gray-600 uppercase tracking-[0.2em]"
-                    >
-                        By proceeding, you agree to our Terms of Service &
-                        Privacy Policy
-                    </p>
+                            <!-- Photo Consent Checkbox -->
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group"
+                            >
+                                <div class="relative flex items-center my-1">
+                                    <input
+                                        type="checkbox"
+                                        v-model="photoConsent"
+                                        class="peer h-5 w-5 appearance-none rounded-lg border-2 border-white/20 checked:border-brand-yellow checked:bg-brand-yellow transition-all"
+                                    />
+                                    <svg
+                                        class="absolute h-5 w-5 text-black opacity-0 peer-checked:opacity-100 transition-opacity"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="4"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-[11px] font-bold text-gray-300 uppercase tracking-tight group-hover:text-white transition-colors"
+                                >
+                                    I have read and consented to the form linked
+                                </span>
+                            </label>
+
+                            <div class="pt-2 border-t border-white/5">
+                                <a
+                                    href="https://docs.google.com/document/d/1QfiNtnntEZWzK19vfh6L6jeXp_-kUAcg/edit"
+                                    target="_blank"
+                                    class="text-[9px] text-brand-yellow font-black uppercase tracking-widest hover:underline flex items-center gap-1"
+                                >
+                                    View Full Consent Document
+                                    <svg
+                                        class="w-3 h-3"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                        />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <button
+                                @click="step = 'IDENTIFY'"
+                                :disabled="!isAgeVerified || !photoConsent"
+                                class="w-full bg-linear-to-r from-brand-yellow to-yellow-600 text-black font-black py-5 rounded-full transition-all active:scale-[0.98] shadow-xl disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group"
+                            >
+                                <span class="uppercase tracking-tighter text-lg"
+                                    >Accept & Continue</span
+                                >
+                            </button>
+
+                            <button
+                                @click="hasDeclined = true"
+                                class="w-full text-[10px] font-black text-gray-500 uppercase tracking-widest py-3 hover:text-red-500 transition-colors"
+                            >
+                                I Decline
+                            </button>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <div class="text-center py-10 space-y-6">
+                            <div
+                                class="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-full mx-auto flex items-center justify-center mb-6"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-10 w-10 text-red-500"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </div>
+                            <h2
+                                class="text-2xl font-black text-white italic tracking-tighter uppercase leading-none"
+                            >
+                                Access Denied
+                            </h2>
+                            <p
+                                class="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed"
+                            >
+                                You must be over 18 and agree to all terms to
+                                access this platform.
+                            </p>
+                            <button
+                                @click="hasDeclined = false"
+                                class="w-full bg-white/10 text-white font-black py-4 rounded-full uppercase tracking-widest text-xs border border-white/10 hover:bg-white/20 transition-all"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </template>
                 </div>
 
                 <div

@@ -21,14 +21,18 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $event = \App\Models\Event::where('is_active', true)->latest()->first();
-        $rankings = $event ? $this->rankingService->getEventRankings($event->id) : collect();
+        $performance_v2 = Performance::latest()->first();
 
         // print ("<pre>");
 
         $activePerformance = Performance::with('artist.genre')
             ->where('status', 'live')
             ->first();
+        // $rankings = $activePerformance ? $this->rankingService->getEventRankings($activePerformance->id) : 0;
+        $event = \App\Models\Event::where('is_active', true)->latest()->first();
+        $rankings = $event ? $this->rankingService->getEventRankings($event->id) : collect();
+        // print_r($event);
+        // exit;
 
         $upcomingArtists = Artist::with([
             'genre',
@@ -47,11 +51,19 @@ class DashboardController extends Controller
                 $ratio = 0;
 
                 if ($performance) {
+                    // print ("<pre>");
+                    // print_r($rankings);
+                    // exit;
                     $voteCount = Vote::where('performance_id', $performance->id)->distinct('user_id')->count('user_id');
-                    $scoreData = $rankings->firstWhere('performance_id', $performance->id);
-                    $finalScore = $scoreData ? $scoreData->bias_rating : 0;
-                    $ratio = $scoreData ? $scoreData->ratio : 0;
+                    // $scoreData = $rankings->firstWhere('performance_id', $performance->id);
+                    // $finalScore = $scoreData ? $scoreData->bias_rating : 0;
+                    // $ratio = $scoreData ? $scoreData->ratio : 0;
+
+                    $finalScore = $this->rankingService->getEventRankings($performance->id);
                 }
+
+                // print ("<pre>");
+                // print_r($performance);
 
                 return [
                     'id' => $artist->id,
@@ -66,7 +78,11 @@ class DashboardController extends Controller
             });
 
         // Map live artist data for frontend
-        $liveScoreData = $activePerformance ? $rankings->firstWhere('performance_id', $activePerformance->id) : null;
+        // print_r($activePerformance->id);
+        // exit;
+
+        // $liveScoreData = $activePerformance ? $rankings->firstWhere('performance_id', $activePerformance->id) : null;
+        $liveScoreData = $activePerformance ? $this->rankingService->getEventRankings($activePerformance->id) : null;
         $mappedLiveArtist = $activePerformance ? [
             'id' => $activePerformance->artist->id,
             'performance_id' => $activePerformance->id,

@@ -47,40 +47,7 @@ class VoteController extends Controller
             return back()->with('error', 'You have already rated this performance.');
         }
 
-        $role = $user->role->name ?? 'fan';
-        $target = in_array($role, ['judge', 'admin']) ? 'judge' : 'fan';
-
-        foreach ($request->ratings as $questionId => $answer) {
-            $question = \App\Models\VotingQuestion::find($questionId);
-            
-            if (!$question) continue;
-
-            // Security: Ensure the question is targeted for the user's role (or both)
-            if (!in_array($question->target, [$target, 'both'])) continue;
-
-            // Security: Fans are only allowed to submit 'rating' type questions
-            if ($role === 'fan' && $question->type !== 'rating') continue;
-            
-            $rating = null;
-            $voteComment = $request->comment;
-
-            if ($question->type === 'rating') {
-                $rating = (int) $answer;
-            } else {
-                // If text question, the answer is the comment itself
-                $voteComment = $answer . ($request->comment ? "\n---\n" . $request->comment : "");
-            }
-
-            Vote::create([
-                'user_id' => $user->id,
-                'performance_id' => $performance->id,
-                'question_id' => $questionId,
-                'rating' => $rating,
-                'comment' => $voteComment
-            ]);
-        }
-
-        \App\Events\PerformanceUpdated::dispatch($performance, 'New vote cast');
+        event(new \App\Events\VoteSubmitted($user, $performance, $request->ratings, $request->comment));
 
         return back()->with('success', 'Rating submitted successfully!');
     }

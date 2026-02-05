@@ -328,7 +328,7 @@ const goBack = () => {
                             ></div>
 
                             <div
-                                class="relative glass-card bg-white/[0.03] backdrop-blur-3xl p-5 rounded-[2.2rem] flex items-center gap-6 border border-white/10 group-hover:border-white/20 transition-all duration-300 shadow-2xl"
+                                class="relative glass-card bg-white/3 backdrop-blur-3xl p-5 rounded-[2.2rem] flex items-center gap-6 border border-white/10 group-hover:border-white/20 transition-all duration-300 shadow-2xl"
                             >
                                 <!-- Album Art Placeholder with Glass Effect -->
                                 <div
